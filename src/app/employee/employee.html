@@ -1,0 +1,341 @@
+<!-- 
+<div class="dashboard-container">
+
+  <div class="navbar">
+  <div class="logo">
+    <i class="fa-solid fa-briefcase"></i>
+    <span>Employee Dashboard</span>
+  </div>
+
+  <div class="nav-actions">
+    
+     <button (click)="toggleTheme()" class="theme-btn">
+  <i 
+    [ngClass]="isDarkMode 
+      ? 'fa-solid fa-moon' 
+      : 'fa-solid fa-cloud-sun'">
+  </i>
+</button>
+
+
+  
+
+    <button class="logout-btn" (click)="logout()">
+      <i class="fa-solid fa-right-from-bracket"></i>
+      Logout
+    </button>
+  </div>
+</div>
+
+
+  <div class="kanban-board">
+
+    <div class="kanban-column todo-column">
+
+      <div class="column-header">
+        <span>
+          <i class="fa-solid fa-list-check"></i>
+          To Do
+        </span>
+        <span class="task-count">{{ todoTasks.length }}</span>
+      </div>
+
+     <div class="column-body"
+  cdkDropList
+  id="todoList"
+  [cdkDropListData]="todoTasks"
+  [cdkDropListConnectedTo]="['progressList','doneList']"
+  (cdkDropListDropped)="drop($event, 'To Do')">
+
+        <div
+          class="task-card"
+          *ngFor="let task of todoTasks"
+          cdkDrag
+        >
+          <h4>
+            <i class="fa-solid fa-thumbtack"></i>
+            {{ task.title }}
+          </h4>
+
+          <p class="task-id">Task #{{ task.id }}</p>
+
+
+            <p class="task-description">
+    {{ task.description }}
+  </p>
+
+          <select
+            [value]="task.status"
+            (change)="changeStatus(task.id, $any($event.target).value)"
+          >
+           <option *ngFor="let status of STATUSES" [value]="status">
+              {{ status }}
+           </option>
+          </select>
+        </div>
+      </div>
+
+    </div>
+
+
+    <div class="kanban-column progress-column">
+
+      <div class="column-header">
+        <span>
+          <i class="fa-solid fa-spinner"></i>
+          In Progress
+        </span>
+        <span class="task-count">{{ inProgressTasks.length }}</span>
+      </div>
+
+      <div class="column-body"
+  cdkDropList
+  id="progressList"
+  [cdkDropListData]="inProgressTasks"
+  [cdkDropListConnectedTo]="['todoList','doneList']"
+  (cdkDropListDropped)="drop($event, 'In Progress')">
+
+        <div
+          class="task-card"
+          *ngFor="let task of inProgressTasks"
+          cdkDrag
+        >
+          <h4>{{ task.title }}</h4>
+
+          <p class="task-id">Task #{{ task.id }}</p>
+
+          <p class="task-description">
+    {{ task.description }}
+  </p>
+
+          <select
+            [value]="task.status"
+            (change)="changeStatus(task.id, $any($event.target).value)"
+          >
+            <option *ngFor="let status of STATUSES" [value]="status">
+                {{ status }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+    </div>
+
+
+    <div class="kanban-column done-column">
+
+      <div class="column-header">
+        <span>
+          <i class="fa-solid fa-circle-check"></i>
+          Completed
+        </span>
+        <span class="task-count">{{ completedTasks.length }}</span>
+      </div>
+
+      <div class="column-body"
+  cdkDropList
+  id="doneList"
+  [cdkDropListData]="completedTasks"
+  [cdkDropListConnectedTo]="['todoList','progressList']"
+  (cdkDropListDropped)="drop($event, 'Completed')">
+
+        <div
+          class="task-card"
+          *ngFor="let task of completedTasks"
+          cdkDrag
+        >
+          <h4>{{ task.title }}</h4>
+
+          <p class="task-id">Task #{{ task.id }}</p>
+
+            <p class="task-description">
+    {{ task.description }}
+  </p>
+
+          <select
+            [value]="task.status"
+            (change)="changeStatus(task.id, $any($event.target).value)"
+          >
+            <option *ngFor="let status of STATUSES" [value]="status">
+              {{ status }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div> -->
+<mat-toolbar color="primary">
+
+  <span>Employee Dashboard</span>
+
+  <span class="spacer"></span>
+
+  <button mat-icon-button (click)="toggleTheme()">
+    <mat-icon>
+      {{ isDarkMode ? 'dark_mode' : 'light_mode' }}
+    </mat-icon>
+  </button>
+
+  <button mat-button color="warn" (click)="logout()">
+    Logout
+  </button>
+
+</mat-toolbar>
+
+
+
+<div class="board">
+
+  <!-- TO DO -->
+
+  <mat-card class="column">
+
+    <h3>To Do ({{ todoCount }})</h3>
+
+    <div
+      cdkDropList
+      id="todoList"
+      [cdkDropListData]="todoTasks"
+      [cdkDropListConnectedTo]="['progressList','doneList']"
+      (cdkDropListDropped)="drop($event,'To Do')"
+    >
+
+      <mat-card
+        *ngFor="let task of todoTasks"
+        cdkDrag
+        class="task"
+      >
+
+        <h4>{{ task.title }}</h4>
+
+        <p>{{ task.description }}</p>
+
+        <mat-form-field appearance="outline">
+
+          <mat-select
+            [value]="getStatusName(task)"
+            (selectionChange)="changeStatus(task.id,$event.value)"
+          >
+
+            <mat-option
+              *ngFor="let s of STATUSES"
+              [value]="s"
+            >
+              {{ s }}
+            </mat-option>
+
+          </mat-select>
+
+        </mat-form-field>
+
+      </mat-card>
+
+    </div>
+
+  </mat-card>
+
+
+
+  <!-- IN PROGRESS -->
+
+  <mat-card class="column">
+
+    <h3>In Progress ({{ inProgressCount }})</h3>
+
+    <div
+      cdkDropList
+      id="progressList"
+      [cdkDropListData]="inProgressTasks"
+      [cdkDropListConnectedTo]="['todoList','doneList']"
+      (cdkDropListDropped)="drop($event,'In Progress')"
+    >
+
+      <mat-card
+        *ngFor="let task of inProgressTasks"
+        cdkDrag
+        class="task"
+      >
+
+        <h4>{{ task.title }}</h4>
+
+        <p>{{ task.description }}</p>
+
+        <mat-form-field appearance="outline">
+
+          <mat-select
+            [value]="getStatusName(task)"
+            (selectionChange)="changeStatus(task.id,$event.value)"
+          >
+
+            <mat-option
+              *ngFor="let s of STATUSES"
+              [value]="s"
+            >
+              {{ s }}
+            </mat-option>
+
+          </mat-select>
+
+        </mat-form-field>
+
+      </mat-card>
+
+    </div>
+
+  </mat-card>
+
+
+
+  <!-- COMPLETED -->
+
+  <mat-card class="column">
+
+    <h3>Completed ({{ completedCount }})</h3>
+
+    <div
+      cdkDropList
+      id="doneList"
+      [cdkDropListData]="completedTasks"
+      [cdkDropListConnectedTo]="['todoList','progressList']"
+      (cdkDropListDropped)="drop($event,'Completed')"
+    >
+
+      <mat-card
+        *ngFor="let task of completedTasks"
+        cdkDrag
+        class="task"
+      >
+
+        <h4>{{ task.title }}</h4>
+
+        <p>{{ task.description }}</p>
+
+        <mat-form-field appearance="outline">
+
+          <mat-select
+            [value]="getStatusName(task)"
+            (selectionChange)="changeStatus(task.id,$event.value)"
+          >
+
+            <mat-option
+              *ngFor="let s of STATUSES"
+              [value]="s"
+            >
+              {{ s }}
+            </mat-option>
+
+          </mat-select>
+
+        </mat-form-field>
+
+      </mat-card>
+
+    </div>
+
+  </mat-card>
+
+</div>

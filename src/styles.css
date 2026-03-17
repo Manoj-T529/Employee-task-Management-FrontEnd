@@ -1,1 +1,29 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  /* DARK THEME DEFAULT */
+  --bg-main: #0f172a;
+  --bg-navbar: #111827;
+  --bg-card: #1f2937;
+  --text-primary: #ffffff;
+  --text-secondary: #cbd5e1;
+
+  --navbar-border: #ffffff;
+  --border-color: #ffffff;
+}
+
+body.light-theme {
+  /* LIGHT THEME */
+  --bg-main: #e5e7eb;
+  --bg-navbar: #ffffff;
+  --bg-card: #ffffff;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+
+  --navbar-border: #000000;
+  --border-color: #000000;
+}
+
+body {
+  background: var(--bg-main);
+  color: var(--text-primary);
+  transition: 0.3s ease;
+}

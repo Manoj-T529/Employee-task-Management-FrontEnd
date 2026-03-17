@@ -1,0 +1,498 @@
+<!-- <div class="admin-wrapper">
+
+
+  <header class="admin-header">
+    <div class="brand">
+      <i class="fa-solid fa-bolt"></i>
+      TaskFlow
+    </div>
+
+    <div class="header-right">
+      <div class="admin-badge">
+        <i class="fa-solid fa-shield-halved"></i>
+        Admin
+      </div>
+      <button class="theme-btn" (click)="toggleTheme()">
+  <i 
+    [ngClass]="isDarkMode 
+      ? 'fa-solid fa-moon' 
+      : 'fa-solid fa-cloud-sun'">
+  </i>
+</button>
+
+      <button class="logout-btn" (click)="logout()">
+        <i class="fa-solid fa-right-from-bracket"></i>
+      </button>
+    </div>
+  </header>
+
+  <div class="admin-body">
+
+   
+    <aside class="sidebar">
+
+      <div class="menu-item" [class.active]="currentView === 'dashboard'" (click)="setView('dashboard')">
+        <i class="fa-solid fa-chart-line"></i>
+        <span>Dashboard</span>
+      </div>
+
+      <div class="menu-item" [class.active]="currentView === 'create'" (click)="setView('create')">
+        <i class="fa-solid fa-plus"></i>
+        <span>Create Task</span>
+      </div>
+
+      <div class="menu-item" [class.active]="currentView === 'manage'" (click)="setView('manage')">
+        <i class="fa-solid fa-list-check"></i>
+        <span>Manage Tasks</span>
+      </div>
+
+      <div class="menu-item" [class.active]="currentView === 'users'" (click)="setView('users')">
+        <i class="fa-solid fa-users"></i>
+        <span>Manage Employees</span>
+      </div>
+
+    </aside>
+
+
+    <main class="main-content">
+
+     <div *ngIf="currentView === 'dashboard'">
+
+  <div class="dashboard-grid">
+
+    <div class="stat-card blue">
+      <div class="stat-top">
+        <i class="fa-solid fa-list-check"></i>
+        <span>Total Tasks</span>
+      </div>
+      <div class="stat-number">{{ totalTasks }}</div>
+    </div>
+
+    <div class="stat-card indigo">
+      <div class="stat-top">
+        <i class="fa-solid fa-clipboard-list"></i>
+        <span>To Do</span>
+      </div>
+      <div class="stat-number">{{ todoCount }}</div>
+    </div>
+
+    <div class="stat-card amber">
+      <div class="stat-top">
+        <i class="fa-solid fa-hourglass-half"></i>
+        <span>In Progress</span>
+      </div>
+      <div class="stat-number">{{ inProgressCount }}</div>
+    </div>
+
+    <div class="stat-card green">
+      <div class="stat-top">
+        <i class="fa-solid fa-circle-check"></i>
+        <span>Completed</span>
+      </div>
+      <div class="stat-number">{{ completedCount }}</div>
+    </div>
+
+  </div>
+
+</div>
+
+
+       <div *ngIf="currentView === 'create'" class="view-animate">
+      <div class="card create-card glow-card">
+        <h3><i class="fa-solid fa-pen-to-square"></i> Create Task</h3>
+
+      <div class="form-grid">
+      <input [(ngModel)]="newTask.title" placeholder="Task Title">
+      <input [(ngModel)]="newTask.description" placeholder="Description">
+
+      
+      <div class="remote-select">
+
+        <input type="text"
+               placeholder="Search employee..."
+               [formControl]="employeeSearchControl"
+               (focus)="showEmployeeDropdown = true">
+
+        <div class="dropdown"
+             *ngIf="showEmployeeDropdown">
+
+          <div *ngIf="isSearchingEmployees" class="dropdown-item">
+            Searching...
+          </div>
+
+          <div *ngIf="!isSearchingEmployees && employees.length === 0"
+               class="dropdown-item">
+            No employees found
+          </div>
+
+          <div *ngFor="let emp of employees"
+               class="dropdown-item"
+               (click)="selectEmployee(emp)">
+            <strong>{{ emp.name }}</strong>
+            <small>{{ emp.email }}</small>
+          </div>
+
+        </div>
+
+        <div *ngIf="selectedEmployee" class="selected-employee">
+          Assigned to: {{ selectedEmployee.name }}
+          <button (click)="clearSelectedEmployee()">✕</button>
+        </div>
+
+      </div>
+    </div>
+
+    <button class="primary-btn" (click)="createTask()">
+      <i class="fa-solid fa-plus"></i> Create
+    </button>
+
+
+       
+      </div>
+      </div>
+
+  
+<div *ngIf="currentView === 'manage'" class="view-animate">
+
+  <div class="card manage-card glow-card">
+
+    <h3>
+      <i class="fa-solid fa-layer-group"></i>
+      Manage Tasks
+    </h3>
+
+    <div class="manage-list">
+
+      <div class="manage-item" *ngFor="let task of tasks">
+
+        <div class="manage-left">
+          <h4>{{ task.title }}</h4>
+          <p>Assigned to: {{ task.assignedTo }}</p>
+        </div>
+
+        <div class="manage-right">
+
+          <span class="status-badge"
+                [ngClass]="{
+                  'todo': task.status === 'To Do',
+                  'progress': task.status === 'In Progress',
+                  'done': task.status === 'Completed'
+                }">
+            {{ task.status }}
+          </span>
+
+          <select [(ngModel)]="task.status"
+                  (change)="changeStatus(task.id, task.status)"
+                  class="custom-select">
+            <option value="To Do">📝 To Do</option>
+            <option value="In Progress">⏳ In Progress</option>
+            <option value="Completed">✅ Completed</option>
+          </select>
+
+             <button class="danger-btn"
+          (click)="deleteTask(task.id)">
+    <i class="fa-solid fa-trash"></i>
+    Delete
+  </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+<div *ngIf="currentView === 'users'" class="view-animate">
+
+  <div class="card manage-card glow-card">
+    <h3>Create Employee</h3>
+      <div class="form-grid">
+
+    <input [(ngModel)]="newEmployee.name" placeholder="Name" (focus)="showEmployeeDropdown = true">
+    <input [(ngModel)]="newEmployee.email" placeholder="Email" (focus)="showEmployeeDropdown = true">
+    <input [(ngModel)]="newEmployee.password" placeholder="Password" type="password" (focus)="showEmployeeDropdown = true">
+
+    <button class="primary-btn" (click)="createEmployee()">
+      Create Employee
+    </button>
+    </div>
+  </div>
+<br/>
+
+  <div class="card manage-card glow-card">
+    <h3>Employee List</h3>
+
+    <div *ngFor="let emp of employeesList" class="manage-item">
+      <div>
+        <strong>{{ emp.name }}</strong>
+        <p>{{ emp.email }}</p>
+      </div>
+
+      <button class="danger-btn"
+              (click)="deleteEmployee(emp.id)">
+        Delete
+      </button>
+      
+    </div>
+  </div>
+
+</div>
+
+
+    </main>
+  </div>
+</div> -->
+
+
+
+<mat-sidenav-container class="admin-container">
+
+<mat-sidenav mode="side" opened>
+
+<h2>Admin</h2>
+
+<button mat-button (click)="setView('dashboard')">
+Dashboard
+</button>
+
+<button mat-button (click)="setView('projects')">
+Projects
+</button>
+
+<button mat-button (click)="setView('tasks')">
+Tasks
+</button>
+
+<button mat-button (click)="setView('employees')">
+Employees
+</button>
+
+<button mat-button (click)="setView('calendar')">
+Calendar
+</button>
+
+</mat-sidenav>
+
+
+<mat-sidenav-content>
+  <div class="content-wrapper">
+<div class="admin-header">
+
+<h2>{{view | titlecase}}</h2>
+
+<button
+class="theme-btn"
+(click)="toggleTheme()">
+
+Theme
+
+</button>
+
+</div>
+
+
+<!-- DASHBOARD -->
+
+<div *ngIf="view==='dashboard'">
+
+<h2>Project Status</h2>
+
+<mat-card *ngFor="let p of projects">
+
+{{p.name}}
+
+</mat-card>
+
+</div>
+
+
+<!-- PROJECTS -->
+
+<div *ngIf="view==='projects'">
+
+<mat-card>
+
+<mat-form-field appearance="outline">
+
+<input
+matInput
+placeholder="Project name"
+[(ngModel)]="newProject.name">
+
+</mat-form-field>
+
+<button
+mat-raised-button
+color="primary"
+(click)="createProject()">
+
+Create
+
+</button>
+
+</mat-card>
+
+</div>
+
+<!-- TASKS -->
+
+<div *ngIf="view==='tasks'">
+
+<mat-card>
+
+<mat-form-field>
+
+<mat-select
+placeholder="Project"
+[(ngModel)]="task.project_id">
+
+<mat-option
+*ngFor="let p of projects"
+[value]="p.id">
+
+{{p.name}}
+
+</mat-option>
+
+</mat-select>
+
+</mat-form-field>
+
+
+<mat-form-field>
+
+<input matInput
+placeholder="Title"
+[(ngModel)]="task.title">
+
+</mat-form-field>
+
+
+<mat-form-field>
+
+<mat-select
+placeholder="Priority"
+[(ngModel)]="task.priority_id">
+
+<mat-option [value]="1">Low</mat-option>
+<mat-option [value]="2">Medium</mat-option>
+<mat-option [value]="3">High</mat-option>
+
+</mat-select>
+
+</mat-form-field>
+
+
+<mat-form-field>
+
+<input
+matInput
+[matDatepicker]="picker"
+placeholder="Due date"
+[(ngModel)]="task.due_date">
+
+<mat-datepicker-toggle
+matSuffix
+[for]="picker">
+</mat-datepicker-toggle>
+
+<mat-datepicker #picker>
+</mat-datepicker>
+
+</mat-form-field>
+
+
+<mat-form-field>
+
+<mat-select
+multiple
+placeholder="Assign users"
+[(ngModel)]="task.assignees">
+
+<mat-option
+*ngFor="let u of users"
+[value]="u.id">
+
+{{u.name}}
+
+</mat-option>
+
+</mat-select>
+
+</mat-form-field>
+
+
+<button
+mat-raised-button
+color="primary"
+(click)="createTask()">
+
+Create Task
+
+</button>
+
+</mat-card>
+
+</div>
+
+
+<!-- EMPLOYEES -->
+
+<div *ngIf="view==='employees'">
+
+<mat-card>
+
+<mat-form-field>
+<input matInput
+placeholder="Name"
+[(ngModel)]="employee.name">
+</mat-form-field>
+
+<mat-form-field>
+<input matInput
+placeholder="Email"
+[(ngModel)]="employee.email">
+</mat-form-field>
+
+<mat-form-field>
+<input matInput
+placeholder="Password"
+[(ngModel)]="employee.password">
+</mat-form-field>
+
+<button
+mat-raised-button
+color="primary"
+(click)="createEmployee()">
+
+Create
+
+</button>
+
+</mat-card>
+
+</div>
+
+
+<!-- CALENDAR -->
+
+<!-- CALENDAR -->
+
+<div *ngIf="view==='calendar'">
+
+<h2>Calendar</h2>
+
+<mat-card class="calendar-card">
+
+<app-calendar></app-calendar>
+
+</mat-card>
+
+</div>
+
+</div>
+</mat-sidenav-content>
+
+</mat-sidenav-container>

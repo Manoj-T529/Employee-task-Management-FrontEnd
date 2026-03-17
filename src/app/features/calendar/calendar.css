@@ -1,0 +1,193 @@
+.calendar-wrapper{
+
+padding:20px;
+
+}
+
+.calendar-card{
+
+padding:20px;
+
+}
+
+.calendar-grid{
+
+display:grid;
+
+grid-template-columns:
+
+repeat(auto-fill,minmax(250px,1fr));
+
+gap:16px;
+
+}
+
+.calendar-item{
+
+background:#fafafa;
+
+border-radius:8px;
+
+padding:12px;
+
+box-shadow:0 2px 6px rgba(0,0,0,0.1);
+
+}
+
+.title{
+
+font-weight:600;
+
+}
+
+.date{
+
+font-size:12px;
+
+color:#555;
+
+}
+
+.badge{
+
+padding:4px 8px;
+
+border-radius:6px;
+
+font-size:12px;
+
+}
+
+.todo{
+
+background:#2196f3;
+color:white;
+
+}
+
+.progress{
+
+background:#ff9800;
+color:white;
+
+}
+
+.done{
+
+background:#4caf50;
+color:white;
+
+}
+
+.calendar-layout {
+
+  display: flex;
+
+  height: 100vh;
+
+  background: #f4f5f8;
+
+  font-family: Segoe UI, sans-serif;
+
+}
+
+
+/* SIDEBAR */
+
+.sidebar {
+
+  width: 260px;
+
+  background: white;
+
+  border-right: 1px solid #ddd;
+
+  padding: 12px;
+
+}
+
+.sidebar h3 {
+
+  margin-bottom: 10px;
+
+}
+
+.my-cal {
+
+  margin-top: 20px;
+
+  font-size: 14px;
+
+}
+
+
+/* MAIN */
+
+.calendar-main {
+
+  flex: 1;
+
+  display: flex;
+
+  flex-direction: column;
+
+}
+
+
+/* TOOLBAR */
+
+.toolbar {
+
+  height: 50px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 10px;
+
+  background: white;
+
+  border-bottom: 1px solid #ddd;
+
+}
+
+
+/* WEEK VIEW SIZE */
+
+mwl-calendar-week-view {
+
+  height: calc(100vh - 50px);
+
+}
+
+
+/* DAY VIEW */
+
+mwl-calendar-day-view {
+
+  height: calc(100vh - 50px);
+
+}
+
+
+/* MONTH VIEW */
+
+mwl-calendar-month-view {
+
+  height: calc(100vh - 50px);
+
+}
+
+
+/* EVENT STYLE */
+
+.cal-event {
+
+  border-radius: 6px;
+
+  font-size: 12px;
+
+}

@@ -1,0 +1,67 @@
+<h2 mat-dialog-title>
+
+Task
+
+</h2>
+
+<div mat-dialog-content>
+
+  <mat-form-field>
+
+    <input matInput
+      [(ngModel)]="task.title">
+
+  </mat-form-field>
+
+
+  <mat-form-field>
+
+    <input matInput
+      type="date"
+      [(ngModel)]="task.due_date">
+
+  </mat-form-field>
+
+
+  <mat-form-field>
+
+    <mat-select
+      [(ngModel)]="task.status_id">
+
+      <mat-option [value]="1">
+        TODO
+      </mat-option>
+
+      <mat-option [value]="2">
+        IN PROGRESS
+      </mat-option>
+
+      <mat-option [value]="3">
+        DONE
+      </mat-option>
+
+    </mat-select>
+
+  </mat-form-field>
+
+</div>
+
+
+<div mat-dialog-actions>
+
+  <button mat-button
+    (click)="close()">
+
+    Cancel
+
+  </button>
+
+  <button mat-raised-button
+    color="primary"
+    (click)="save()">
+
+    Save
+
+  </button>
+
+</div>

@@ -1,0 +1,110 @@
+<div class="login-container">
+
+  <!-- LEFT -->
+
+  <div class="login-left">
+
+    <div class="brand-content">
+
+      <h1>TaskFlow</h1>
+
+      <p>
+        Manage tasks smarter.<br>
+        Track progress effortlessly.<br>
+        Build like a pro.
+      </p>
+
+    </div>
+
+    <div class="glow glow1"></div>
+    <div class="glow glow2"></div>
+
+  </div>
+
+
+
+  <!-- RIGHT -->
+
+  <div class="login-right">
+
+    <mat-card class="login-card">
+
+      <h2>Login to TaskFlow</h2>
+
+
+      <form (ngSubmit)="login()">
+
+
+        <!-- EMAIL -->
+
+        <mat-form-field
+          appearance="outline"
+          class="full-width"
+        >
+
+          <mat-label>Email</mat-label>
+
+          <mat-icon matPrefix>mail</mat-icon>
+
+          <input
+            matInput
+            [(ngModel)]="email"
+            name="email"
+            required
+          />
+
+        </mat-form-field>
+
+
+
+        <!-- PASSWORD -->
+
+        <mat-form-field
+          appearance="outline"
+          class="full-width"
+        >
+
+          <mat-label>Password</mat-label>
+
+          <mat-icon matPrefix>lock</mat-icon>
+
+          <input
+            matInput
+            type="password"
+            [(ngModel)]="password"
+            name="password"
+            required
+          />
+
+        </mat-form-field>
+
+
+
+        <!-- BUTTON -->
+
+        <button
+          mat-raised-button
+          color="primary"
+          class="login-btn"
+          type="submit"
+        >
+
+          Login
+
+        </button>
+
+
+        <p
+          class="error"
+          *ngIf="errorMessage"
+        >
+          {{ errorMessage }}
+        </p>
+
+      </form>
+
+    </mat-card>
+
+  </div>
+
+</div>
