@@ -1,67 +1,53 @@
-<h2 mat-dialog-title>
+<div class="dialog-wrapper split-layout">
+  
+  <!-- LEFT COLUMN: Task Details -->
+  <div class="dialog-main">
+    <h2 mat-dialog-title class="dialog-title">
+      <span class="brand-icon"><mat-icon>{{ isNew ? 'add_box' : 'edit_square' }}</mat-icon></span> 
+      <span *ngIf="isNew">Schedule New Task</span>
+  <span *ngIf="!isNew" class="task-id">
+    {{ task.id | slice:0:8 }}
+  </span>
+    </h2>
 
-Task
+    <div mat-dialog-content class="dialog-content">
+      <div class="form-group">
+        <label>Issue Title</label>
+        <input type="text" [(ngModel)]="task.title" [placeholder]="isNew ? 'What needs to be done?' : ''">
+      </div>
 
-</h2>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea [(ngModel)]="task.description" placeholder="Add technical details..." rows="4" class="custom-textarea"></textarea>
+      </div>
 
-<div mat-dialog-content>
+      <div class="form-row">
+        <div class="form-group"><label>Status</label><select [(ngModel)]="task.status_id"><option [value]="1">To Do</option><option [value]="2">In Progress</option><option [value]="3">Done</option></select></div>
+        <div class="form-group"><label>Priority</label><select [(ngModel)]="task.priority_id"><option [value]="1">Low</option><option [value]="2">Medium</option><option [value]="3">High</option></select></div>
+        <div class="form-group"><label>Story Points</label><input type="number" [(ngModel)]="task.story_points" placeholder="e.g. 3"></div>
+      </div>
 
-  <mat-form-field>
+      <div class="form-row">
+        <div class="form-group"><label>Start Date</label><input type="date" [(ngModel)]="task.start_date"></div>
+        <div class="form-group"><label>Due Date</label><input type="date" [(ngModel)]="task.due_date"></div>
+      </div>
 
-    <input matInput
-      [(ngModel)]="task.title">
+      <div class="form-group">
+        <label>Assign To</label>
+        <mat-select multiple [(ngModel)]="task.assignees" class="custom-mat-select" placeholder="Select Team Members...">
+          <mat-option *ngFor="let u of users" [value]="u.id">{{u.first_name || u.name || u.username}}</mat-option>
+        </mat-select>
+      </div>
+    </div>
 
-  </mat-form-field>
+    <div mat-dialog-actions class="dialog-actions">
+        <div *ngIf="isNew"></div>
+      <div style="display: flex; gap: 12px;">
+        <button class="cancel-btn" (click)="close()">Cancel</button>
+        <button class="primary-btn" (click)="save()">{{ isNew ? 'Create Task' : 'Save Changes' }}</button>
+      </div>
+    </div>
+  </div>
+    </div>
+     
 
-
-  <mat-form-field>
-
-    <input matInput
-      type="date"
-      [(ngModel)]="task.due_date">
-
-  </mat-form-field>
-
-
-  <mat-form-field>
-
-    <mat-select
-      [(ngModel)]="task.status_id">
-
-      <mat-option [value]="1">
-        TODO
-      </mat-option>
-
-      <mat-option [value]="2">
-        IN PROGRESS
-      </mat-option>
-
-      <mat-option [value]="3">
-        DONE
-      </mat-option>
-
-    </mat-select>
-
-  </mat-form-field>
-
-</div>
-
-
-<div mat-dialog-actions>
-
-  <button mat-button
-    (click)="close()">
-
-    Cancel
-
-  </button>
-
-  <button mat-raised-button
-    color="primary"
-    (click)="save()">
-
-    Save
-
-  </button>
-
-</div>

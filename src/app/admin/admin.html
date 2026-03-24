@@ -1,498 +1,363 @@
-<!-- <div class="admin-wrapper">
+<div class="premium-layout">
 
-
-  <header class="admin-header">
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="sidebar">
     <div class="brand">
-      <i class="fa-solid fa-bolt"></i>
-      TaskFlow
+      <div class="brand-icon"><mat-icon>layers</mat-icon></div>
+      <span class="brand-name">TaskFlow</span>
     </div>
 
-    <div class="header-right">
-      <div class="admin-badge">
-        <i class="fa-solid fa-shield-halved"></i>
-        Admin
+    <div class="nav-section">
+      <span class="nav-label">Workspace</span>
+      <nav class="nav-menu">
+        <button [class.active]="view === 'dashboard'" (click)="setView('dashboard')"><mat-icon>home</mat-icon> Home</button>
+        <button [class.active]="view === 'board'" (click)="setView('board')" [disabled]="!selectedProject"><mat-icon>view_kanban</mat-icon> Active Board</button>
+        <button [class.active]="view === 'calendar'" (click)="setView('calendar')"><mat-icon>calendar_today</mat-icon> Calendar</button>
+      </nav>
+    </div>
+
+    <div class="nav-section">
+      <span class="nav-label">Management</span>
+      <nav class="nav-menu">
+        <button [class.active]="view === 'projects'" (click)="setView('projects')"><mat-icon>create_new_folder</mat-icon> Projects</button>
+        <button [class.active]="view === 'tasks'" (click)="setView('tasks')"><mat-icon>add_box</mat-icon> New Issue</button>
+        <button [class.active]="view === 'employees'" (click)="setView('employees')"><mat-icon>group_add</mat-icon> Team Directory</button>
+      </nav>
+    </div>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="sidebar-footer">
+      <div class="user-profile">
+        <div class="user-info">
+          <span class="user-name">Admin User</span>
+          <span class="user-role">Workspace Owner</span>
+        </div>
       </div>
-      <button class="theme-btn" (click)="toggleTheme()">
-  <i 
-    [ngClass]="isDarkMode 
-      ? 'fa-solid fa-moon' 
-      : 'fa-solid fa-cloud-sun'">
-  </i>
-</button>
-
-      <button class="logout-btn" (click)="logout()">
-        <i class="fa-solid fa-right-from-bracket"></i>
-      </button>
+      <button class="icon-btn logout-btn" (click)="logout()" title="Logout"><mat-icon>logout</mat-icon></button>
     </div>
-  </header>
+  </aside>
 
-  <div class="admin-body">
+  <!-- ================= MAIN ================= -->
+  <main class="main-content">
 
+    <!-- ================= HEADER ================= -->
+    <header class="glass-header">
+      <div class="header-left">
+        <div class="breadcrumb" *ngIf="view === 'board'">
+          <mat-icon>folder</mat-icon>
+          <mat-select class="invisible-select" [(ngModel)]="selectedProjectId" (selectionChange)="changeProject()">
+            <mat-option *ngFor="let p of projects" [value]="p.id">{{p.name}}</mat-option>
+          </mat-select>
+        </div>
+        <h1 class="page-title" *ngIf="view !== 'board'">
+          {{ view === 'dashboard' ? 'Home' : view | titlecase }}
+        </h1>
+      </div>
+    </header>
+
+    <div class="content-scrollable">
+
+
+      <!-- ================= DASHBOARD ================= -->
+      <div *ngIf="view === 'dashboard'" class="animate-fade">
+        
+        <!-- DASHBOARD STATS -->
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-icon" style="background: rgba(99, 102, 241, 0.1); color: #818cf8;"><mat-icon>folder</mat-icon></div>
+            <div class="stat-info"><span class="stat-value">{{totalProjects}}</span><span class="stat-label">Workspaces</span></div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: #34d399;"><mat-icon>check_circle</mat-icon></div>
+            <div class="stat-info"><span class="stat-value">{{activeUsers}}</span><span class="stat-label">Active Users</span></div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1); color: #f87171;"><mat-icon>person_off</mat-icon></div>
+            <div class="stat-info"><span class="stat-value">{{inactiveUsers}}</span><span class="stat-label">Inactive Users</span></div>
+          </div>
+        </div>
+
+        <!-- PROJECTS GRID -->
+        <div class="page-header" style="margin-top: 40px; margin-bottom: 24px;"><h2>Your Workspaces</h2></div>
+        <div class="projects-grid">
+          <div class="premium-card project-card" *ngFor="let p of projects" (click)="openProject(p)">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <h3>{{p.name}}</h3>
+              <button class="icon-btn" (click)="deleteProject($event, p.id)" style="color: #ef4444; margin-top: -4px; margin-right: -4px;"><mat-icon>delete</mat-icon></button>
+            </div>
+            <p class="desc">{{p.description || 'No description provided.'}}</p>
+          </div>
+        </div>
+      </div>
    
-    <aside class="sidebar">
+     <!-- ================= BOARD ================= -->
+      <div *ngIf="view === 'board'" class="animate-fade board-container">
+        
+        <!-- BOARD STATS (Only show when not loading) -->
+        <div class="board-stats-row" *ngIf="!isLoadingBoard">
+          <span><strong>{{totalBoardTasks}}</strong> Total Tasks</span>
+          <span class="dot-separator">•</span>
+          <span style="color: #9ca3af;"><strong>{{todoCount}}</strong> To Do</span>
+          <span class="dot-separator">•</span>
+          <span style="color: #f59e0b;"><strong>{{inProgressCount}}</strong> In Progress</span>
+          <span class="dot-separator">•</span>
+          <span style="color: #818cf8;"><strong>{{doneCount}}</strong> Done</span>
+        </div>
 
-      <div class="menu-item" [class.active]="currentView === 'dashboard'" (click)="setView('dashboard')">
-        <i class="fa-solid fa-chart-line"></i>
-        <span>Dashboard</span>
+        <!-- SKELETON BOARD -->
+        <div class="kanban-columns" *ngIf="isLoadingBoard">
+          <div class="kanban-col" *ngFor="let i of [1,2,3]">
+            <div class="col-header"><div class="skeleton skeleton-title" style="width: 40%;"></div></div>
+            <div class="col-body">
+              <div class="issue-card skeleton" style="height: 100px; padding: 16px;" *ngFor="let j of [1,2]">
+                <div class="skeleton skeleton-text" style="width: 30%;"></div>
+                <div class="skeleton skeleton-text" style="width: 80%;"></div>
+                <div style="display:flex; justify-content:space-between; margin-top:16px;">
+                   <div class="skeleton skeleton-text" style="width: 40px;"></div>
+                   <div class="skeleton skeleton-avatar"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- REAL BOARD -->
+        <div class="kanban-columns" *ngIf="!isLoadingBoard">
+          
+          <!-- TO DO COLUMN -->
+          <div class="kanban-col">
+            <div class="col-header">
+              <div class="col-title"><span class="dot todo"></span> To Do <span class="count">{{ board.TODO?.length || 0 }}</span></div>
+            </div>
+            <div class="col-body" cdkDropList id="list-todo" [cdkDropListData]="board.TODO" [cdkDropListConnectedTo]="['list-prog', 'list-done']" (cdkDropListDropped)="drop($event, 'TODO')">
+              <div class="issue-card" *ngFor="let t of board.TODO" cdkDrag (click)="openTaskDialog(t)">
+                
+                <div class="issue-header">
+                  <span class="issue-id">{{t.id | slice:0:8}}</span>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <div class="priority-icon p-{{t.priority_id}}"><mat-icon>signal_cellular_alt</mat-icon></div>
+                    <button class="icon-btn" (click)="deleteTask($event, t.id)" style="color: #ef4444; padding: 2px;" title="Delete Task">
+                      <mat-icon style="font-size: 16px; width: 16px; height: 16px;">delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+
+                <h4 class="issue-title">{{t.title}}</h4>
+                
+                <div class="issue-footer">
+                  <div class="priority-badge p-{{t.priority_id}}">
+                    <mat-icon>flag</mat-icon>
+                    {{ t.priority_id === 3 ? 'High' : (t.priority_id === 2 ? 'Med' : 'Low') }}
+                  </div>
+                  <div class="story-points" *ngIf="t.story_points" title="Story Points">
+                    <mat-icon>change_history</mat-icon> {{t.story_points}}
+                  </div>
+                  
+                  <div class="spacer"></div>
+                  
+                  <!-- COMMENTS BUTTON -->
+                  <button class="icon-btn" (click)="openCommentsDialog($event, t)" title="Comments" style="padding: 4px; margin-right: 8px;">
+                    <mat-icon style="font-size: 16px; width: 16px; height: 16px; color: #a1a1aa;">forum</mat-icon>
+                  </button>
+
+                  <div class="avatar-sm" *ngFor="let a of t.task_assignees" [title]="a.user_id">{{getAvatar(a.user_id)}}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- IN PROGRESS COLUMN -->
+          <div class="kanban-col">
+            <div class="col-header">
+              <div class="col-title"><span class="dot progress"></span> In Progress <span class="count">{{ board.IN_PROGRESS?.length || 0 }}</span></div>
+            </div>
+            <div class="col-body" cdkDropList id="list-prog" [cdkDropListData]="board.IN_PROGRESS" [cdkDropListConnectedTo]="['list-todo', 'list-done']" (cdkDropListDropped)="drop($event, 'IN_PROGRESS')">
+              <div class="issue-card" *ngFor="let t of board.IN_PROGRESS" cdkDrag (click)="openTaskDialog(t)">
+                
+                <div class="issue-header">
+                  <span class="issue-id">{{t.id | slice:0:8}}</span>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <div class="priority-icon p-{{t.priority_id}}"><mat-icon>signal_cellular_alt</mat-icon></div>
+                    <button class="icon-btn" (click)="deleteTask($event, t.id)" style="color: #ef4444; padding: 2px;" title="Delete Task">
+                      <mat-icon style="font-size: 16px; width: 16px; height: 16px;">delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+
+                <h4 class="issue-title">{{t.title}}</h4>
+                
+                <div class="issue-footer">
+                  <div class="priority-badge p-{{t.priority_id}}">
+                    <mat-icon>flag</mat-icon> {{ t.priority_id === 3 ? 'High' : (t.priority_id === 2 ? 'Med' : 'Low') }}
+                  </div>
+                  <div class="story-points" *ngIf="t.story_points" title="Story Points">
+                    <mat-icon>change_history</mat-icon> {{t.story_points}}
+                  </div>
+                  
+                  <div class="spacer"></div>
+                  
+                  <!-- COMMENTS BUTTON -->
+                  <button class="icon-btn" (click)="openCommentsDialog($event, t)" title="Comments" style="padding: 4px; margin-right: 8px;">
+                    <mat-icon style="font-size: 16px; width: 16px; height: 16px; color: #a1a1aa;">forum</mat-icon>
+                  </button>
+
+                  <div class="avatar-sm" *ngFor="let a of t.task_assignees" [title]="a.user_id">{{getAvatar(a.user_id)}}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- DONE COLUMN -->
+          <div class="kanban-col">
+            <div class="col-header">
+              <div class="col-title"><span class="dot done"></span> Done <span class="count">{{ board.DONE?.length || 0 }}</span></div>
+            </div>
+            <div class="col-body" cdkDropList id="list-done" [cdkDropListData]="board.DONE" [cdkDropListConnectedTo]="['list-todo', 'list-prog']" (cdkDropListDropped)="drop($event, 'DONE')">
+              <div class="issue-card done-card" *ngFor="let t of board.DONE" cdkDrag (click)="openTaskDialog(t)">
+                
+                <div class="issue-header">
+                  <span class="issue-id">{{t.id | slice:0:8}}</span>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <mat-icon class="done-icon" style="font-size: 16px; width: 16px; height: 16px;">check_circle</mat-icon>
+                    <button class="icon-btn" (click)="deleteTask($event, t.id)" style="color: #ef4444; padding: 2px;" title="Delete Task">
+                      <mat-icon style="font-size: 16px; width: 16px; height: 16px;">delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+
+                <h4 class="issue-title" style="text-decoration: line-through; color: var(--text-muted)">{{t.title}}</h4>
+                
+                <div class="issue-footer">
+                  <div class="priority-badge p-{{t.priority_id}}">
+                    <mat-icon>flag</mat-icon> {{ t.priority_id === 3 ? 'High' : (t.priority_id === 2 ? 'Med' : 'Low') }}
+                  </div>
+                  <div class="story-points" *ngIf="t.story_points" title="Story Points">
+                    <mat-icon>change_history</mat-icon> {{t.story_points}}
+                  </div>
+                  
+                  <div class="spacer"></div>
+                  
+                  <!-- COMMENTS BUTTON -->
+                  <button class="icon-btn" (click)="openCommentsDialog($event, t)" title="Comments" style="padding: 4px; margin-right: 8px;">
+                    <mat-icon style="font-size: 16px; width: 16px; height: 16px; color: #a1a1aa;">forum</mat-icon>
+                  </button>
+
+                  <div class="avatar-sm" *ngFor="let a of t.task_assignees" [title]="a.user_id">{{getAvatar(a.user_id)}}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div> <!-- Closes .kanban-columns -->
+      </div> <!-- Closes .board-container -->
+      <!-- ================= FORMS (Projects & Tasks) ================= -->
+      <div *ngIf="view === 'projects' || view === 'tasks'" class="animate-fade center-form">
+        <div class="premium-form-card">
+          
+          <ng-container *ngIf="view === 'projects'">
+            <h2>New Workspace</h2>
+            <p class="subtitle">Create a new project workspace for your team.</p>
+            <div class="form-group"><label>Workspace Name</label><input type="text" [(ngModel)]="newProject.name" placeholder="e.g. Q3 Roadmap"></div>
+            <div class="form-group"><label>Description</label><input type="text" [(ngModel)]="newProject.description" placeholder="Project goals..."></div>
+            <div class="form-row">
+              <div class="form-group"><label>Start Date</label><input type="date" [(ngModel)]="newProject.start_date"></div>
+              <div class="form-group"><label>End Date</label><input type="date" [(ngModel)]="newProject.end_date"></div>
+            </div>
+            <button class="primary-btn" (click)="createProject()">Create Workspace</button>
+          </ng-container>
+
+          <ng-container *ngIf="view === 'tasks'">
+            <h2>Create Issue</h2>
+            <p class="subtitle">Draft a new task and assign it to your team.</p>
+            <div class="form-group"><label>Project</label>
+              <select [(ngModel)]="task.project_id"><option value="" disabled selected>Select a workspace...</option><option *ngFor="let p of projects" [value]="p.id">{{p.name}}</option></select>
+            </div>
+            <div class="form-group"><label>Issue Title</label><input type="text" [(ngModel)]="task.title" placeholder="What needs to be done?"></div>
+            <div class="form-group"><label>Description</label><input type="text" [(ngModel)]="task.description" placeholder="Add technical details..."></div>
+            
+            <div class="form-row">
+              <div class="form-group"><label>Priority</label><select [(ngModel)]="task.priority_id"><option [value]="1">Low</option><option [value]="2">Medium</option><option [value]="3">High</option></select></div>
+              <div class="form-group"><label>Story Points</label><input type="number" [(ngModel)]="task.story_points" placeholder="e.g. 3"></div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group"><label>Start Date</label><input type="date" [(ngModel)]="task.start_date"></div>
+              <div class="form-group"><label>Due Date</label><input type="date" [(ngModel)]="task.due_date"></div>
+            </div>
+
+            <div class="form-group">
+              <label>Assign To</label>
+              <mat-select multiple [(ngModel)]="task.assignees" class="custom-mat-select" placeholder="Select Team Members...">
+                <mat-option *ngFor="let u of users" [value]="u.id">{{u.first_name || u.name || u.username}} ({{u.email}})</mat-option>
+              </mat-select>
+            </div>
+            <button class="primary-btn" (click)="createTask()">Create Issue</button>
+          </ng-container>
+
+        </div>
       </div>
 
-      <div class="menu-item" [class.active]="currentView === 'create'" (click)="setView('create')">
-        <i class="fa-solid fa-plus"></i>
-        <span>Create Task</span>
+   <!-- ================= EMPLOYEES (TEAM DIRECTORY) ================= -->
+      <div *ngIf="view === 'employees'" class="animate-fade">
+        <div class="page-header" style="display: flex; flex-direction: column; align-items: flex-start; gap: 16px; margin-bottom: 32px;">
+          <h2 style="margin: 0; font-size: 28px;">Team Directory</h2>
+          <button class="primary-btn" style="width: auto; height: 36px; margin: 0; padding: 0 16px;" (click)="view = 'invite'">
+            <mat-icon>person_add</mat-icon> Invite Member
+          </button>
+        </div>
+        
+
+        <div class="team-grid">
+          <div class="premium-card team-card" *ngFor="let u of users">
+            <div class="card-header" style="justify-content: flex-start; gap: 16px; position: relative;">
+              
+              <!-- Delete Employee Button -->
+              <button class="icon-btn" (click)="deleteEmployee(u.id)" style="position: absolute; top: -10px; right: -10px; color: #ef4444;">
+                <mat-icon style="font-size: 18px;">delete</mat-icon>
+              </button>
+
+              <div class="avatar-lg">{{getAvatar(u.id)}}</div>
+              <div>
+                <h3 style="margin-bottom: 4px;">{{u.first_name || u.name || u.username}} {{u.last_name || ''}}</h3>
+                <span class="status-pill" [class.active]="u.status === 'ACTIVE'">{{u.status || 'ACTIVE'}}</span>
+              </div>
+            </div>
+            <p class="desc" style="display: flex; align-items: center; gap: 6px;">
+              <mat-icon style="font-size:16px; width:16px; height:16px;">mail</mat-icon> {{u.email}}
+            </p>
+            <div class="role-footer">
+              <div>ROLE</div>
+              <span>{{u.role}}</span>
+            </div>
+          </div>
+        </div>
       </div>
-
-      <div class="menu-item" [class.active]="currentView === 'manage'" (click)="setView('manage')">
-        <i class="fa-solid fa-list-check"></i>
-        <span>Manage Tasks</span>
-      </div>
-
-      <div class="menu-item" [class.active]="currentView === 'users'" (click)="setView('users')">
-        <i class="fa-solid fa-users"></i>
-        <span>Manage Employees</span>
-      </div>
-
-    </aside>
-
-
-    <main class="main-content">
-
-     <div *ngIf="currentView === 'dashboard'">
-
-  <div class="dashboard-grid">
-
-    <div class="stat-card blue">
-      <div class="stat-top">
-        <i class="fa-solid fa-list-check"></i>
-        <span>Total Tasks</span>
-      </div>
-      <div class="stat-number">{{ totalTasks }}</div>
-    </div>
-
-    <div class="stat-card indigo">
-      <div class="stat-top">
-        <i class="fa-solid fa-clipboard-list"></i>
-        <span>To Do</span>
-      </div>
-      <div class="stat-number">{{ todoCount }}</div>
-    </div>
-
-    <div class="stat-card amber">
-      <div class="stat-top">
-        <i class="fa-solid fa-hourglass-half"></i>
-        <span>In Progress</span>
-      </div>
-      <div class="stat-number">{{ inProgressCount }}</div>
-    </div>
-
-    <div class="stat-card green">
-      <div class="stat-top">
-        <i class="fa-solid fa-circle-check"></i>
-        <span>Completed</span>
-      </div>
-      <div class="stat-number">{{ completedCount }}</div>
-    </div>
-
-  </div>
-
-</div>
-
-
-       <div *ngIf="currentView === 'create'" class="view-animate">
-      <div class="card create-card glow-card">
-        <h3><i class="fa-solid fa-pen-to-square"></i> Create Task</h3>
-
-      <div class="form-grid">
-      <input [(ngModel)]="newTask.title" placeholder="Task Title">
-      <input [(ngModel)]="newTask.description" placeholder="Description">
-
       
-      <div class="remote-select">
-
-        <input type="text"
-               placeholder="Search employee..."
-               [formControl]="employeeSearchControl"
-               (focus)="showEmployeeDropdown = true">
-
-        <div class="dropdown"
-             *ngIf="showEmployeeDropdown">
-
-          <div *ngIf="isSearchingEmployees" class="dropdown-item">
-            Searching...
+      <!-- ================= INVITE FORM ================= -->
+      <div *ngIf="view === 'invite'" class="animate-fade center-form">
+        <div class="premium-form-card">
+          <h2>Invite Teammate</h2>
+          <p class="subtitle">Add a new member to your organization.</p>
+          <div class="form-row">
+            <div class="form-group"><label>First Name</label><input type="text" [(ngModel)]="employee.first_name"></div>
+            <div class="form-group"><label>Last Name</label><input type="text" [(ngModel)]="employee.last_name"></div>
           </div>
-
-          <div *ngIf="!isSearchingEmployees && employees.length === 0"
-               class="dropdown-item">
-            No employees found
+          <div class="form-group"><label>Username</label><input type="text" [(ngModel)]="employee.username"></div>
+          <div class="form-group"><label>Email Address</label><input type="email" [(ngModel)]="employee.email"></div>
+          <div class="form-group"><label>Temporary Password</label><input type="password" [(ngModel)]="employee.password"></div>
+          <div class="form-row">
+            <button class="cancel-btn" style="flex: 1;" (click)="view = 'employees'">Cancel</button>
+            <button class="primary-btn" style="flex: 1; margin-top: 0;" (click)="createEmployee()">Send Invitation</button>
           </div>
-
-          <div *ngFor="let emp of employees"
-               class="dropdown-item"
-               (click)="selectEmployee(emp)">
-            <strong>{{ emp.name }}</strong>
-            <small>{{ emp.email }}</small>
-          </div>
-
         </div>
-
-        <div *ngIf="selectedEmployee" class="selected-employee">
-          Assigned to: {{ selectedEmployee.name }}
-          <button (click)="clearSelectedEmployee()">✕</button>
-        </div>
-
-      </div>
-    </div>
-
-    <button class="primary-btn" (click)="createTask()">
-      <i class="fa-solid fa-plus"></i> Create
-    </button>
-
-
-       
-      </div>
       </div>
 
-  
-<div *ngIf="currentView === 'manage'" class="view-animate">
-
-  <div class="card manage-card glow-card">
-
-    <h3>
-      <i class="fa-solid fa-layer-group"></i>
-      Manage Tasks
-    </h3>
-
-    <div class="manage-list">
-
-      <div class="manage-item" *ngFor="let task of tasks">
-
-        <div class="manage-left">
-          <h4>{{ task.title }}</h4>
-          <p>Assigned to: {{ task.assignedTo }}</p>
-        </div>
-
-        <div class="manage-right">
-
-          <span class="status-badge"
-                [ngClass]="{
-                  'todo': task.status === 'To Do',
-                  'progress': task.status === 'In Progress',
-                  'done': task.status === 'Completed'
-                }">
-            {{ task.status }}
-          </span>
-
-          <select [(ngModel)]="task.status"
-                  (change)="changeStatus(task.id, task.status)"
-                  class="custom-select">
-            <option value="To Do">📝 To Do</option>
-            <option value="In Progress">⏳ In Progress</option>
-            <option value="Completed">✅ Completed</option>
-          </select>
-
-             <button class="danger-btn"
-          (click)="deleteTask(task.id)">
-    <i class="fa-solid fa-trash"></i>
-    Delete
-  </button>
-
-        </div>
-
+      <!-- ================= CALENDAR ================= -->
+      <div *ngIf="view === 'calendar'" class="animate-fade calendar-wrapper">
+        <app-calendar [projects]="projects" [users]="users" (taskCreated)="loadBoard(selectedProjectId)"></app-calendar>
       </div>
 
-    </div>
-
-  </div>
-
-</div>
-<div *ngIf="currentView === 'users'" class="view-animate">
-
-  <div class="card manage-card glow-card">
-    <h3>Create Employee</h3>
-      <div class="form-grid">
-
-    <input [(ngModel)]="newEmployee.name" placeholder="Name" (focus)="showEmployeeDropdown = true">
-    <input [(ngModel)]="newEmployee.email" placeholder="Email" (focus)="showEmployeeDropdown = true">
-    <input [(ngModel)]="newEmployee.password" placeholder="Password" type="password" (focus)="showEmployeeDropdown = true">
-
-    <button class="primary-btn" (click)="createEmployee()">
-      Create Employee
-    </button>
-    </div>
-  </div>
-<br/>
-
-  <div class="card manage-card glow-card">
-    <h3>Employee List</h3>
-
-    <div *ngFor="let emp of employeesList" class="manage-item">
-      <div>
-        <strong>{{ emp.name }}</strong>
-        <p>{{ emp.email }}</p>
-      </div>
-
-      <button class="danger-btn"
-              (click)="deleteEmployee(emp.id)">
-        Delete
-      </button>
-      
-    </div>
-  </div>
-
-</div>
-
-
-    </main>
-  </div>
-</div> -->
-
-
-
-<mat-sidenav-container class="admin-container">
-
-<mat-sidenav mode="side" opened>
-
-<h2>Admin</h2>
-
-<button mat-button (click)="setView('dashboard')">
-Dashboard
-</button>
-
-<button mat-button (click)="setView('projects')">
-Projects
-</button>
-
-<button mat-button (click)="setView('tasks')">
-Tasks
-</button>
-
-<button mat-button (click)="setView('employees')">
-Employees
-</button>
-
-<button mat-button (click)="setView('calendar')">
-Calendar
-</button>
-
-</mat-sidenav>
-
-
-<mat-sidenav-content>
-  <div class="content-wrapper">
-<div class="admin-header">
-
-<h2>{{view | titlecase}}</h2>
-
-<button
-class="theme-btn"
-(click)="toggleTheme()">
-
-Theme
-
-</button>
-
-</div>
-
-
-<!-- DASHBOARD -->
-
-<div *ngIf="view==='dashboard'">
-
-<h2>Project Status</h2>
-
-<mat-card *ngFor="let p of projects">
-
-{{p.name}}
-
-</mat-card>
-
-</div>
-
-
-<!-- PROJECTS -->
-
-<div *ngIf="view==='projects'">
-
-<mat-card>
-
-<mat-form-field appearance="outline">
-
-<input
-matInput
-placeholder="Project name"
-[(ngModel)]="newProject.name">
-
-</mat-form-field>
-
-<button
-mat-raised-button
-color="primary"
-(click)="createProject()">
-
-Create
-
-</button>
-
-</mat-card>
-
-</div>
-
-<!-- TASKS -->
-
-<div *ngIf="view==='tasks'">
-
-<mat-card>
-
-<mat-form-field>
-
-<mat-select
-placeholder="Project"
-[(ngModel)]="task.project_id">
-
-<mat-option
-*ngFor="let p of projects"
-[value]="p.id">
-
-{{p.name}}
-
-</mat-option>
-
-</mat-select>
-
-</mat-form-field>
-
-
-<mat-form-field>
-
-<input matInput
-placeholder="Title"
-[(ngModel)]="task.title">
-
-</mat-form-field>
-
-
-<mat-form-field>
-
-<mat-select
-placeholder="Priority"
-[(ngModel)]="task.priority_id">
-
-<mat-option [value]="1">Low</mat-option>
-<mat-option [value]="2">Medium</mat-option>
-<mat-option [value]="3">High</mat-option>
-
-</mat-select>
-
-</mat-form-field>
-
-
-<mat-form-field>
-
-<input
-matInput
-[matDatepicker]="picker"
-placeholder="Due date"
-[(ngModel)]="task.due_date">
-
-<mat-datepicker-toggle
-matSuffix
-[for]="picker">
-</mat-datepicker-toggle>
-
-<mat-datepicker #picker>
-</mat-datepicker>
-
-</mat-form-field>
-
-
-<mat-form-field>
-
-<mat-select
-multiple
-placeholder="Assign users"
-[(ngModel)]="task.assignees">
-
-<mat-option
-*ngFor="let u of users"
-[value]="u.id">
-
-{{u.name}}
-
-</mat-option>
-
-</mat-select>
-
-</mat-form-field>
-
-
-<button
-mat-raised-button
-color="primary"
-(click)="createTask()">
-
-Create Task
-
-</button>
-
-</mat-card>
-
-</div>
-
-
-<!-- EMPLOYEES -->
-
-<div *ngIf="view==='employees'">
-
-<mat-card>
-
-<mat-form-field>
-<input matInput
-placeholder="Name"
-[(ngModel)]="employee.name">
-</mat-form-field>
-
-<mat-form-field>
-<input matInput
-placeholder="Email"
-[(ngModel)]="employee.email">
-</mat-form-field>
-
-<mat-form-field>
-<input matInput
-placeholder="Password"
-[(ngModel)]="employee.password">
-</mat-form-field>
-
-<button
-mat-raised-button
-color="primary"
-(click)="createEmployee()">
-
-Create
-
-</button>
-
-</mat-card>
-
-</div>
-
-
-<!-- CALENDAR -->
-
-<!-- CALENDAR -->
-
-<div *ngIf="view==='calendar'">
-
-<h2>Calendar</h2>
-
-<mat-card class="calendar-card">
-
-<app-calendar></app-calendar>
-
-</mat-card>
-
-</div>
-
-</div>
-</mat-sidenav-content>
-
-</mat-sidenav-container>
+    </div> <!-- Closes content-scrollable -->
+  </main> <!-- Closes main-content -->
+</div> <!-- Closes premium-layout -->

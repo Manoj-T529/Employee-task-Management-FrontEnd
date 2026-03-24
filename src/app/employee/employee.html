@@ -168,174 +168,176 @@
   </div>
 
 </div> -->
-<mat-toolbar color="primary">
 
-  <span>Employee Dashboard</span>
+<div class="premium-layout">
 
-  <span class="spacer"></span>
-
-  <button mat-icon-button (click)="toggleTheme()">
-    <mat-icon>
-      {{ isDarkMode ? 'dark_mode' : 'light_mode' }}
-    </mat-icon>
-  </button>
-
-  <button mat-button color="warn" (click)="logout()">
-    Logout
-  </button>
-
-</mat-toolbar>
-
-
-
-<div class="board">
-
-  <!-- TO DO -->
-
-  <mat-card class="column">
-
-    <h3>To Do ({{ todoCount }})</h3>
-
-    <div
-      cdkDropList
-      id="todoList"
-      [cdkDropListData]="todoTasks"
-      [cdkDropListConnectedTo]="['progressList','doneList']"
-      (cdkDropListDropped)="drop($event,'To Do')"
-    >
-
-      <mat-card
-        *ngFor="let task of todoTasks"
-        cdkDrag
-        class="task"
-      >
-
-        <h4>{{ task.title }}</h4>
-
-        <p>{{ task.description }}</p>
-
-        <mat-form-field appearance="outline">
-
-          <mat-select
-            [value]="getStatusName(task)"
-            (selectionChange)="changeStatus(task.id,$event.value)"
-          >
-
-            <mat-option
-              *ngFor="let s of STATUSES"
-              [value]="s"
-            >
-              {{ s }}
-            </mat-option>
-
-          </mat-select>
-
-        </mat-form-field>
-
-      </mat-card>
-
+  <!-- ================= GLASS HEADER ================= -->
+  <header class="glass-header">
+    <div class="header-left">
+      <div class="brand">
+        <div class="brand-icon"><mat-icon>layers</mat-icon></div>
+        <span class="brand-name">TaskFlow</span>
+      </div>
+      
+      <div class="divider"></div>
+      
+      <div class="breadcrumb">
+        <mat-icon>folder</mat-icon>
+        <mat-select class="invisible-select" [(ngModel)]="selectedProjectId" (selectionChange)="onProjectChange($event.value)">
+          <mat-option value="" disabled selected>Select Workspace...</mat-option>
+          <mat-option *ngFor="let p of projects" [value]="p.id">{{ p.name }}</mat-option>
+        </mat-select>
+      </div>
     </div>
 
-  </mat-card>
+    <div class="header-right">
+      <div class="user-profile">
+        <div class="avatar-sm">EM</div>
+        <div class="user-info">
+          <span class="user-name">Employee</span>
+        </div>
+      </div>
+      <button class="icon-btn logout-btn" (click)="logout()" title="Logout">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </div>
+  </header>
 
+  <!-- ================= MAIN CONTENT ================= -->
+  <main class="content-scrollable">
 
-
-  <!-- IN PROGRESS -->
-
-  <mat-card class="column">
-
-    <h3>In Progress ({{ inProgressCount }})</h3>
-
-    <div
-      cdkDropList
-      id="progressList"
-      [cdkDropListData]="inProgressTasks"
-      [cdkDropListConnectedTo]="['todoList','doneList']"
-      (cdkDropListDropped)="drop($event,'In Progress')"
-    >
-
-      <mat-card
-        *ngFor="let task of inProgressTasks"
-        cdkDrag
-        class="task"
-      >
-
-        <h4>{{ task.title }}</h4>
-
-        <p>{{ task.description }}</p>
-
-        <mat-form-field appearance="outline">
-
-          <mat-select
-            [value]="getStatusName(task)"
-            (selectionChange)="changeStatus(task.id,$event.value)"
-          >
-
-            <mat-option
-              *ngFor="let s of STATUSES"
-              [value]="s"
-            >
-              {{ s }}
-            </mat-option>
-
-          </mat-select>
-
-        </mat-form-field>
-
-      </mat-card>
-
+    <div *ngIf="!selectedProjectId" class="empty-state animate-fade">
+      <mat-icon>view_kanban</mat-icon>
+      <h2>No Workspace Selected</h2>
+      <p>Please select a project workspace from the top menu to view your tasks.</p>
     </div>
 
-  </mat-card>
+    <div *ngIf="selectedProjectId" class="board-container animate-fade">
+      <div class="kanban-columns">
 
+        <!-- ================= TO DO ================= -->
+        <div class="kanban-col">
+          <div class="col-header">
+            <div class="col-title"><span class="dot todo"></span> To Do <span class="count">{{ todoCount }}</span></div>
+          </div>
+          <div class="col-body" cdkDropList id="todoList" [cdkDropListData]="todoTasks" [cdkDropListConnectedTo]="['progressList','doneList']" (cdkDropListDropped)="drop($event,'To Do')">
+            <div class="issue-card" *ngFor="let task of todoTasks" cdkDrag>
+              
+              <div class="issue-header">
+                <span class="issue-id">{{ task.id | slice:0:8 }}</span>
+              </div>
+              
+              <h4 class="issue-title">{{ task.title }}</h4>
+              
+              <div class="issue-footer">
+                <select class="status-select" [value]="getStatusName(task)" (change)="changeStatus(task.id, $any($event.target).value)">
+                  <option *ngFor="let s of STATUSES" [value]="s">{{ s }}</option>
+                </select>
 
+                <div class="priority-badge p-{{task.priority_id}}" style="margin-left: 8px;">
+                  <mat-icon>flag</mat-icon> {{ task.priority_id === 3 ? 'High' : (task.priority_id === 2 ? 'Med' : 'Low') }}
+                </div>
+                
+                <div class="story-points" *ngIf="task.story_points" title="Story Points">
+                  <mat-icon>change_history</mat-icon> {{task.story_points}}
+                </div>
+                
+                <div class="spacer"></div>
+                
+                <!-- COMMENT BUTTON -->
+                <button class="icon-btn" (click)="openCommentsDialog(task)" title="Comments" style="padding: 4px; margin-right: 8px;">
+                  <mat-icon style="font-size: 16px; width: 16px; height: 16px; color: #a1a1aa;">forum</mat-icon>
+                </button>
 
-  <!-- COMPLETED -->
+                <div class="avatar-sm" *ngFor="let a of task.task_assignees" [title]="a.user_id">{{getAvatar(a.user_id)}}</div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-  <mat-card class="column">
+        <!-- ================= IN PROGRESS ================= -->
+        <div class="kanban-col">
+          <div class="col-header">
+            <div class="col-title"><span class="dot progress"></span> In Progress <span class="count">{{ inProgressCount }}</span></div>
+          </div>
+          <div class="col-body" cdkDropList id="progressList" [cdkDropListData]="inProgressTasks" [cdkDropListConnectedTo]="['todoList','doneList']" (cdkDropListDropped)="drop($event,'In Progress')">
+            <div class="issue-card" *ngFor="let task of inProgressTasks" cdkDrag>
+              
+              <div class="issue-header">
+                <span class="issue-id">{{ task.id | slice:0:8 }}</span>
+              </div>
+              
+              <h4 class="issue-title">{{ task.title }}</h4>
+              
+              <div class="issue-footer">
+                <select class="status-select progress-select" [value]="getStatusName(task)" (change)="changeStatus(task.id, $any($event.target).value)">
+                  <option *ngFor="let s of STATUSES" [value]="s">{{ s }}</option>
+                </select>
 
-    <h3>Completed ({{ completedCount }})</h3>
+                <div class="priority-badge p-{{task.priority_id}}" style="margin-left: 8px;">
+                  <mat-icon>flag</mat-icon> {{ task.priority_id === 3 ? 'High' : (task.priority_id === 2 ? 'Med' : 'Low') }}
+                </div>
+                
+                <div class="story-points" *ngIf="task.story_points" title="Story Points">
+                  <mat-icon>change_history</mat-icon> {{task.story_points}}
+                </div>
+                
+                <div class="spacer"></div>
+                
+                <!-- COMMENT BUTTON -->
+                <button class="icon-btn" (click)="openCommentsDialog(task)" title="Comments" style="padding: 4px; margin-right: 8px;">
+                  <mat-icon style="font-size: 16px; width: 16px; height: 16px; color: #a1a1aa;">forum</mat-icon>
+                </button>
 
-    <div
-      cdkDropList
-      id="doneList"
-      [cdkDropListData]="completedTasks"
-      [cdkDropListConnectedTo]="['todoList','progressList']"
-      (cdkDropListDropped)="drop($event,'Completed')"
-    >
+                <div class="avatar-sm" *ngFor="let a of task.task_assignees" [title]="a.user_id">{{getAvatar(a.user_id)}}</div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-      <mat-card
-        *ngFor="let task of completedTasks"
-        cdkDrag
-        class="task"
-      >
+        <!-- ================= COMPLETED ================= -->
+        <div class="kanban-col">
+          <div class="col-header">
+            <div class="col-title"><span class="dot done"></span> Done <span class="count">{{ completedCount }}</span></div>
+          </div>
+          <div class="col-body" cdkDropList id="doneList" [cdkDropListData]="completedTasks" [cdkDropListConnectedTo]="['todoList','progressList']" (cdkDropListDropped)="drop($event,'Completed')">
+            <div class="issue-card done-card" *ngFor="let task of completedTasks" cdkDrag>
+              
+              <div class="issue-header">
+                <span class="issue-id">{{ task.id | slice:0:8 }}</span>
+                <mat-icon class="done-icon">check_circle</mat-icon>
+              </div>
+              
+              <h4 class="issue-title" style="text-decoration: line-through; color: var(--text-muted)">{{ task.title }}</h4>
+              
+              <div class="issue-footer">
+                <select class="status-select done-select" [value]="getStatusName(task)" (change)="changeStatus(task.id, $any($event.target).value)">
+                  <option *ngFor="let s of STATUSES" [value]="s">{{ s }}</option>
+                </select>
 
-        <h4>{{ task.title }}</h4>
+                <div class="priority-badge p-{{task.priority_id}}" style="margin-left: 8px;">
+                  <mat-icon>flag</mat-icon> {{ task.priority_id === 3 ? 'High' : (task.priority_id === 2 ? 'Med' : 'Low') }}
+                </div>
+                
+                <div class="story-points" *ngIf="task.story_points" title="Story Points">
+                  <mat-icon>change_history</mat-icon> {{task.story_points}}
+                </div>
+                
+                <div class="spacer"></div>
+                
+                <!-- COMMENT BUTTON -->
+                <button class="icon-btn" (click)="openCommentsDialog(task)" title="Comments" style="padding: 4px; margin-right: 8px;">
+                  <mat-icon style="font-size: 16px; width: 16px; height: 16px; color: #a1a1aa;">forum</mat-icon>
+                </button>
 
-        <p>{{ task.description }}</p>
+                <div class="avatar-sm" *ngFor="let a of task.task_assignees" [title]="a.user_id">{{getAvatar(a.user_id)}}</div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-        <mat-form-field appearance="outline">
+      </div>
+      </div>
 
-          <mat-select
-            [value]="getStatusName(task)"
-            (selectionChange)="changeStatus(task.id,$event.value)"
-          >
-
-            <mat-option
-              *ngFor="let s of STATUSES"
-              [value]="s"
-            >
-              {{ s }}
-            </mat-option>
-
-          </mat-select>
-
-        </mat-form-field>
-
-      </mat-card>
-
-    </div>
-
-  </mat-card>
-
+  </main>
 </div>

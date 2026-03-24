@@ -1,0 +1,71 @@
+<div class="dialog-wrapper">
+  <h2 mat-dialog-title class="dialog-title">
+    <span class="brand-icon"><mat-icon>{{ isNew ? 'add_box' : 'edit_square' }}</mat-icon></span> 
+    {{ isNew ? 'Schedule New Task' : 'Edit Task Details' }}
+  </h2>
+
+  <div mat-dialog-content class="dialog-content">
+    
+    <div class="form-group" *ngIf="isNew">
+      <label>Project Workspace</label>
+      <select [(ngModel)]="task.project_id">
+        <option *ngFor="let p of projects" [value]="p.id">{{p.name}}</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Issue Title</label>
+      <input type="text" [(ngModel)]="task.title" [readonly]="!isNew" [placeholder]="isNew ? 'What needs to be done?' : ''">
+    </div>
+
+    <div class="form-group" *ngIf="isNew">
+      <label>Description</label>
+      <input type="text" [(ngModel)]="task.description" placeholder="Details...">
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Status</label>
+        <select [(ngModel)]="task.status_id">
+          <option [value]="1">To Do</option>
+          <option [value]="2">In Progress</option>
+          <option [value]="3">Done</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Priority</label>
+        <select [(ngModel)]="task.priority_id">
+          <option [value]="1">Low</option><option [value]="2">Medium</option><option [value]="3">High</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Story Points</label>
+        <input type="number" [(ngModel)]="task.story_points" placeholder="e.g. 3">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Start Date</label>
+        <input type="date" [(ngModel)]="task.start_date">
+      </div>
+      <div class="form-group">
+        <label>Due Date</label>
+        <input type="date" [(ngModel)]="task.due_date">
+      </div>
+    </div>
+
+    <div class="form-group" *ngIf="isNew">
+      <label>Assign To</label>
+      <select multiple [(ngModel)]="task.assignees" class="multi-select">
+        <option *ngFor="let u of users" [value]="u.id">{{u.first_name || u.name || u.username}}</option>
+      </select>
+    </div>
+
+  </div>
+
+  <div mat-dialog-actions class="dialog-actions">
+    <button class="cancel-btn" (click)="close()">Cancel</button>
+    <button class="primary-btn" (click)="save()">{{ isNew ? 'Create Task' : 'Save Changes' }}</button>
+  </div>
+</div>

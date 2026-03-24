@@ -1,110 +1,79 @@
-<div class="login-container">
+<div class="premium-login-layout">
 
-  <!-- LEFT -->
+  <!-- Ambient Glows -->
+  <div class="ambient-glow glow-indigo"></div>
+  <div class="ambient-glow glow-purple"></div>
 
-  <div class="login-left">
-
-    <div class="brand-content">
-
-      <h1>TaskFlow</h1>
-
-      <p>
-        Manage tasks smarter.<br>
-        Track progress effortlessly.<br>
-        Build like a pro.
-      </p>
-
+  <div class="login-wrapper animate-fade-up">
+    
+    <!-- Brand Header -->
+    <div class="brand-header" (click)="goToHome()">
+      <div class="brand-icon"><mat-icon>layers</mat-icon></div>
+      <span class="brand-name">TaskFlow</span>
     </div>
 
-    <div class="glow glow1"></div>
-    <div class="glow glow2"></div>
-
-  </div>
-
-
-
-  <!-- RIGHT -->
-
-  <div class="login-right">
-
-    <mat-card class="login-card">
-
-      <h2>Login to TaskFlow</h2>
-
+    <!-- Login Card -->
+    <div class="premium-form-card">
+      <div class="card-header">
+        <h2>Welcome back</h2>
+        <p class="subtitle">Enter your credentials to access your workspace.</p>
+      </div>
 
       <form (ngSubmit)="login()">
-
-
+        
         <!-- EMAIL -->
-
-        <mat-form-field
-          appearance="outline"
-          class="full-width"
-        >
-
-          <mat-label>Email</mat-label>
-
-          <mat-icon matPrefix>mail</mat-icon>
-
-          <input
-            matInput
-            [(ngModel)]="email"
-            name="email"
-            required
-          />
-
-        </mat-form-field>
-
-
+        <div class="form-group">
+          <label>Email Address</label>
+          <div class="input-wrapper" [class.disabled]="isLoading">
+            <mat-icon class="input-icon">mail</mat-icon>
+            <input 
+              type="email" 
+              [(ngModel)]="email" 
+              name="email" 
+              placeholder="name@company.com" 
+              required 
+              [disabled]="isLoading"
+            />
+          </div>
+        </div>
 
         <!-- PASSWORD -->
+        <div class="form-group">
+          <label>Password</label>
+          <div class="input-wrapper" [class.disabled]="isLoading">
+            <mat-icon class="input-icon">lock</mat-icon>
+            <input 
+              type="password" 
+              [(ngModel)]="password" 
+              name="password" 
+              placeholder="••••••••" 
+              required 
+              [disabled]="isLoading"
+            />
+          </div>
+        </div>
 
-        <mat-form-field
-          appearance="outline"
-          class="full-width"
-        >
+        <!-- ERROR BANNER -->
+        <div class="error-banner animate-fade-in" *ngIf="errorMessage">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ errorMessage }}</span>
+        </div>
 
-          <mat-label>Password</mat-label>
-
-          <mat-icon matPrefix>lock</mat-icon>
-
-          <input
-            matInput
-            type="password"
-            [(ngModel)]="password"
-            name="password"
-            required
-          />
-
-        </mat-form-field>
-
-
-
-        <!-- BUTTON -->
-
-        <button
-          mat-raised-button
-          color="primary"
-          class="login-btn"
-          type="submit"
-        >
-
-          Login
-
+        <!-- SUBMIT BUTTON -->
+        <button type="submit" class="primary-btn" [disabled]="isLoading">
+          <span *ngIf="!isLoading">Sign In</span>
+          <span *ngIf="isLoading" class="loading-state">
+            <mat-icon class="spinner">autorenew</mat-icon> Signing in...
+          </span>
         </button>
 
-
-        <p
-          class="error"
-          *ngIf="errorMessage"
-        >
-          {{ errorMessage }}
-        </p>
-
       </form>
+    </div>
 
-    </mat-card>
+    <!-- Back to Home -->
+    <button class="back-link" (click)="goToHome()">
+      <mat-icon>arrow_back</mat-icon> Back to Home
+    </button>
 
   </div>
-
 </div>

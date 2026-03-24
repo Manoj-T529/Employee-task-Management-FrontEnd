@@ -1,215 +1,102 @@
-<!-- 
-<nav class="navbar">
-  <div class="logo">TaskFlow</div>
-</nav>
+<div class="premium-landing">
 
-
-<section class="hero">
-
-  
-  <div class="blob blob1"></div>
-  <div class="blob blob2"></div>
-
-  <div class="hero-content">
-    <h1 class="fade-up">
-      Manage Work.  
-      Track Progress.  
-      Deliver Faster.
-    </h1>
-
-    <p class="fade-up delay-1">
-      A modern employee task management system designed to
-      simplify workflows and boost productivity.
-    </p>
-
-    <div class="hero-buttons fade-up delay-2">
-      <button (click)="goToLogin()" class="primary-btn">
-        Get Started
-      </button>
-    </div>
-  </div>
-
-</section>
-
-
-<section class="features">
-
-  <div class="feature-card fade-up">
-    <h3>📋 Smart Task Assignment</h3>
-    <p>Assign tasks instantly and streamline collaboration.</p>
-  </div>
-
-  <div class="feature-card fade-up delay-1">
-    <h3>📊 Real-Time Tracking</h3>
-    <p>Monitor progress with intuitive status updates.</p>
-  </div>
-
-  <div class="feature-card fade-up delay-2">
-    <h3>🔐 Secure Role Access</h3>
-    <p>Separate Admin and Employee access with control.</p>
-  </div>
-
-</section>
-
-
-<section class="stats">
-
-  <div class="stat">
-    <h2>10K+</h2>
-    <p>Tasks Managed</p>
-  </div>
-
-  <div class="stat">
-    <h2>500+</h2>
-    <p>Active Users</p>
-  </div>
-
-  <div class="stat">
-    <h2>99.9%</h2>
-    <p>System Uptime</p>
-  </div>
-
-</section>
-
-
-<footer class="footer">
-  <p>© 2026 TaskFlow </p>
-</footer> -->
-
-
-
-<mat-toolbar color="primary" class="navbar">
-
-  <span class="logo">TaskFlow</span>
-
-  <span class="spacer"></span>
-
-  <!-- <button
-    mat-raised-button
-    color="accent"
-    (click)="goToLogin()"
-  >
-    Get Started 
-  </button>-->
-
-</mat-toolbar>
-
-
-
-<!-- HERO -->
-
-<section class="hero">
-
-  <div class="blob blob1"></div>
-  <div class="blob blob2"></div>
-
-  <div class="hero-content">
-
-    <h1 class="fade-up">
-      Manage Work.
-      Track Progress.
-      Deliver Faster.
-    </h1>
-
-    <p class="fade-up delay-1">
-      A modern employee task management system designed
-      to simplify workflows and boost productivity.
-    </p>
-
-    <div class="hero-buttons fade-up delay-2">
-
-      <button
-        mat-raised-button
-        color="primary"
-        class="primary-btn"
-        (click)="goToLogin()"
-      >
-        Get Started
-      </button>
-
+  <!-- ================= GLASS NAVBAR ================= -->
+  <header class="glass-header">
+    <div class="logo">
+      <div class="logo-icon"><mat-icon>layers</mat-icon></div>
+      <span>TaskFlow</span>
     </div>
 
-  </div>
+    <div class="spacer"></div>
 
-</section>
+    <button class="nav-btn" (click)="goToLogin()">Log in</button>
 
+  </header>
 
+  <!-- ================= HERO ================= -->
+  <section class="hero">
+    
+    <!-- Ambient Background Glows -->
+    <div class="ambient-glow glow-indigo"></div>
+    <div class="ambient-glow glow-purple"></div>
 
-<!-- FEATURES -->
+    <div class="hero-content">
+      <div class="badge fade-up">✨ Task Management Redefined</div>
+      
+      <h1 class="fade-up delay-1">
+        Manage Work. <br/>
+        Track Progress. <br/>
+        <span class="text-gradient">Deliver Faster.</span>
+      </h1>
 
-<section class="features">
+      <p class="fade-up delay-2">
+        A modern, high-performance task management system designed 
+        to simplify workflows, empower teams, and boost productivity.
+      </p>
 
-  <mat-card class="feature-card fade-up">
+      <div class="hero-buttons fade-up delay-3">
+        <button class="primary-btn" (click)="goToLogin()">
+          Start Building <mat-icon>arrow_forward</mat-icon>
+        </button>
+      </div>
+    </div>
+  </section>
 
-    <h3>📋 Smart Task Assignment</h3>
+  <!-- ================= FEATURES ================= -->
+  <section class="features">
+    <div class="section-header fade-up">
+      <h2>Built for modern teams</h2>
+      <p>Everything you need to ship software faster, without the clutter.</p>
+    </div>
 
-    <p>
-      Assign tasks instantly and streamline collaboration.
-    </p>
+    <div class="features-grid">
+      <mat-card class="premium-card feature-card fade-up delay-1">
+        <div class="icon-wrapper"><mat-icon>auto_awesome</mat-icon></div>
+        <h3>Smart Assignment</h3>
+        <p>Assign tasks instantly, distribute workloads evenly, and streamline team collaboration.</p>
+      </mat-card>
 
-  </mat-card>
+      <mat-card class="premium-card feature-card fade-up delay-2">
+        <div class="icon-wrapper"><mat-icon>insights</mat-icon></div>
+        <h3>Real-Time Tracking</h3>
+        <p>Monitor progress with intuitive status updates and real-time socket connections.</p>
+      </mat-card>
 
+      <mat-card class="premium-card feature-card fade-up delay-3">
+        <div class="icon-wrapper"><mat-icon>admin_panel_settings</mat-icon></div>
+        <h3>Secure Access</h3>
+        <p>Enterprise-grade security with strict Role-Based Access Control for Admins and Employees.</p>
+      </mat-card>
+    </div>
+  </section>
 
-  <mat-card class="feature-card fade-up delay-1">
+  <!-- ================= STATS ================= -->
+  <section class="stats">
+    <mat-card class="premium-card stat-card fade-up">
+      <h2>10K+</h2>
+      <p>Tasks Managed</p>
+    </mat-card>
 
-    <h3>📊 Real-Time Tracking</h3>
+    <mat-card class="premium-card stat-card fade-up delay-1">
+      <h2>500+</h2>
+      <p>Active Users</p>
+    </mat-card>
 
-    <p>
-      Monitor progress with intuitive status updates.
-    </p>
+    <mat-card class="premium-card stat-card fade-up delay-2">
+      <h2>99.9%</h2>
+      <p>System Uptime</p>
+    </mat-card>
+  </section>
 
-  </mat-card>
+  <!-- ================= FOOTER ================= -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="logo">
+        <div class="logo-icon"><mat-icon>layers</mat-icon></div>
+        <span>TaskFlow</span>
+      </div>
+      <p>© 2026 TaskFlow Inc. All rights reserved.</p>
+    </div>
+  </footer>
 
-
-  <mat-card class="feature-card fade-up delay-2">
-
-    <h3>🔐 Secure Role Access</h3>
-
-    <p>
-      Separate Admin and Employee access with control.
-    </p>
-
-  </mat-card>
-
-</section>
-
-
-
-<!-- STATS -->
-
-<section class="stats">
-
-  <mat-card class="stat">
-
-    <h2>10K+</h2>
-    <p>Tasks Managed</p>
-
-  </mat-card>
-
-
-  <mat-card class="stat">
-
-    <h2>500+</h2>
-    <p>Active Users</p>
-
-  </mat-card>
-
-
-  <mat-card class="stat">
-
-    <h2>99.9%</h2>
-    <p>System Uptime</p>
-
-  </mat-card>
-
-</section>
-
-
-
-<!-- FOOTER -->
-
-<footer class="footer">
-
-  © 2026 TaskFlow
-
-</footer>
+</div>

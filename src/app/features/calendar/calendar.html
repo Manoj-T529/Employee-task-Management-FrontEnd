@@ -1,105 +1,21 @@
-<div class="calendar-layout">
-
-  <!-- SIDEBAR -->
-
-  <div class="sidebar">
-
-    <h3>Calendar</h3>
-
-    <input type="date">
-
-    <div class="my-cal">
-      My calendar
-    </div>
-
+<div class="calendar-wrapper">
+  
+  <!-- Custom Premium Toolbar -->
+  <div class="cal-toolbar">
+    <h3>{{ viewDate | date:'MMMM yyyy' }}</h3>
+    
+    <!-- CHANGE THIS BUTTON 👇 -->
+    <button class="today-btn" (click)="goToToday()">
+      Today
+    </button>
   </div>
 
-
-  <!-- MAIN -->
-
-  <div class="calendar-main">
-
-    <!-- TOOLBAR -->
-
-    <div class="toolbar">
-
-      <button mat-button
-        (click)="view = CalendarView.Day">
-
-        Day
-
-      </button>
-
-      <button mat-button
-        (click)="view = CalendarView.Week">
-
-        Week
-
-      </button>
-
-      <button mat-button
-        (click)="view = CalendarView.Month">
-
-        Month
-
-      </button>
-
-    </div>
-
-
-    <!-- WEEK VIEW -->
-
-    <mwl-calendar-week-view
-
-      *ngIf="view === CalendarView.Week"
-
-      [viewDate]="viewDate"
-
-      [events]="events"
-
-      [hourSegments]="2"
-
-      [dayStartHour]="8"
-
-      [dayEndHour]="20"
-
-      (eventClicked)="handleEvent($event.event)"
-
-    >
-    </mwl-calendar-week-view>
-
-
-    <!-- DAY VIEW -->
-
-    <mwl-calendar-day-view
-
-      *ngIf="view === CalendarView.Day"
-
-      [viewDate]="viewDate"
-
-      [events]="events"
-
-      (eventClicked)="handleEvent($event.event)"
-
-    >
-    </mwl-calendar-day-view>
-
-
-    <!-- MONTH VIEW -->
-
-    <mwl-calendar-month-view
-
-      *ngIf="view === CalendarView.Month"
-
-      [viewDate]="viewDate"
-
-      [events]="events"
-
-      (eventClicked)="handleEvent($event.event)"
-
-    >
-    </mwl-calendar-month-view>
-
-  </div>
+  <!-- The Calendar Grid -->
+  <mwl-calendar-month-view
+    [viewDate]="viewDate"
+    [events]="events"
+    (dayClicked)="dayClicked($event.day)"
+    (eventClicked)="handleEvent($event.event)">
+  </mwl-calendar-month-view>
 
 </div>
