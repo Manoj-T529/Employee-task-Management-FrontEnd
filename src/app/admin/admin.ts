@@ -1376,7 +1376,7 @@
 
 // }
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef  } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CdkDragDrop, moveItemInArray, transferArrayItem, DragDropModule } from '@angular/cdk/drag-drop';
@@ -1437,7 +1437,8 @@ export class Admin implements OnInit {
     private authService: AuthService,
     private dialog: MatDialog,
     private router: Router,
-    private toast: ToastService
+    private toast: ToastService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -1477,6 +1478,7 @@ export class Admin implements OnInit {
     this.projectService.getProjects().subscribe(r => {
       this.projects = r;
       this.isLoadingProjects = false; // Turn off skeleton
+      this.cdr.detectChanges();
     });
   }
 
@@ -1525,6 +1527,7 @@ loadUsers() {
     this.taskService.getBoard(id).subscribe((r: any) => {
       this.board = { TODO: r.TODO || [], IN_PROGRESS: r.IN_PROGRESS || [], DONE: r.DONE || [] };
       this.isLoadingBoard = false; // Turn off skeleton
+       this.cdr.detectChanges(); 
     });
   }
 

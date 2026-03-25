@@ -45,6 +45,14 @@ export class TaskDialogComponent implements OnInit {
     this.original = { ...data };
     this.task = { ...data };
 
+     if (this.task.task_assignees) {
+      this.task.assignees = this.task.task_assignees.map((a: any) => a.user_id);
+    } else {
+      this.task.assignees = this.task.assignees ||[];
+    }
+    // Update original assignees so we can compare them later
+    this.original.assignees =[...this.task.assignees];
+
     // Format ISO dates from backend so HTML date inputs accept them
     this.task.start_date = this.formatDateForInput(this.task.start_date);
     this.task.due_date = this.formatDateForInput(this.task.due_date);
@@ -112,21 +120,49 @@ export class TaskDialogComponent implements OnInit {
   }
 
   save() {
-    // CREATE MODE (From Calendar or Board)
+    // CREATE MODE
     if (this.isNew) {
       this.taskService.createTask(this.task).subscribe(() => this.dialogRef.close(true));
       return;
     }
 
     // EDIT MODE
-    const apiCalls: Observable<any>[] = [];
+    const apiCalls: Observable<any>[] =[];
+
+    // 1. Check if Status Changed
     if (this.task.status_id !== this.original.status_id) {
       apiCalls.push(this.taskService.updateStatus(this.task.id, this.task.status_id));
     }
+    
+    // 2. Check if Dates Changed
     if (this.task.start_date !== this.original.start_date || this.task.due_date !== this.original.due_date) {
       apiCalls.push(this.taskService.updateTaskDate(this.task.id, this.task.start_date, this.task.due_date));
     }
 
+    // 3. Check if ANYTHING ELSE Changed (Story Points, Title, Priority, Description)
+    const detailsChanged = 
+      this.task.title !== this.original.title || 
+      this.task.description !== this.original.description ||
+      this.task.priority_id !== this.original.priority_id ||
+      this.task.story_points !== this.original.story_points;
+
+    if (detailsChanged) {
+      apiCalls.push(this.taskService.updateTaskDetails(this.task.id, this.task));
+    }
+
+    // --- NEW: 4. Check if Assignees Changed ---
+    const currentAssignees = this.task.assignees ||[];
+    const originalAssignees = this.original.assignees || [];
+    
+    // We sort the arrays before converting to JSON so ['UserA', 'UserB'] matches ['UserB', 'UserA']
+    const assigneesChanged = JSON.stringify([...currentAssignees].sort()) !== JSON.stringify([...originalAssignees].sort());
+
+    // if (assigneesChanged) {
+    //   // Assuming your taskService has an assignUsers method!
+    //   apiCalls.push(this.taskService.assignUsers(this.task.id, currentAssignees));
+    // }
+
+    // --- RUN ALL CHANGES ---
     if (apiCalls.length > 0) {
       forkJoin(apiCalls).subscribe(() => this.dialogRef.close(true));
     } else {
