@@ -1,3 +1,7 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
 <div class="premium-landing">
 
   <!-- ================= GLASS NAVBAR ================= -->
@@ -9,14 +13,14 @@
 
     <div class="spacer"></div>
 
-    <button class="nav-btn" (click)="goToLogin()">Log in</button>
-
+    <!-- DYNAMIC TOP NAV BUTTON -->
+    <button class="nav-btn" (click)="handleAction()">
+      {{ isLoggedIn ? 'Go to Workspace' : 'Log in' }}
+    </button>
   </header>
 
   <!-- ================= HERO ================= -->
   <section class="hero">
-    
-    <!-- Ambient Background Glows -->
     <div class="ambient-glow glow-indigo"></div>
     <div class="ambient-glow glow-purple"></div>
 
@@ -35,13 +39,14 @@
       </p>
 
       <div class="hero-buttons fade-up delay-3">
-        <button class="primary-btn" (click)="goToLogin()">
-          Start Building <mat-icon>arrow_forward</mat-icon>
+        <!-- DYNAMIC HERO BUTTON -->
+        <button class="primary-btn" (click)="handleAction()">
+          {{ isLoggedIn ? 'Open Workspace' : 'Start Building' }} 
+          <mat-icon>arrow_forward</mat-icon>
         </button>
       </div>
     </div>
   </section>
-
   <!-- ================= FEATURES ================= -->
   <section class="features">
     <div class="section-header fade-up">

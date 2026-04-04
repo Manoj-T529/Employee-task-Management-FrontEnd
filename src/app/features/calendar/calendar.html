@@ -1,21 +1,58 @@
 <div class="calendar-wrapper">
   
-  <!-- Custom Premium Toolbar -->
   <div class="cal-toolbar">
-    <h3>{{ viewDate | date:'MMMM yyyy' }}</h3>
-    
-    <!-- CHANGE THIS BUTTON 👇 -->
-    <button class="today-btn" (click)="goToToday()">
-      Today
-    </button>
+    <div class="nav-group">
+      <button class="icon-btn" mwlCalendarPreviousView [view]="view" [(viewDate)]="viewDate" (viewDateChange)="loadTasks()">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+      <button class="today-btn" (click)="goToToday()">Today</button>
+      <button class="icon-btn" mwlCalendarNextView [view]="view" [(viewDate)]="viewDate" (viewDateChange)="loadTasks()">
+        <mat-icon>chevron_right</mat-icon>
+      </button>
+    </div>
+    <h3 class="month-title">{{ viewDate | date:'MMMM yyyy' }}</h3>
+    <div style="width: 120px;"></div> 
   </div>
 
+<!-- CUSTOM TEMPLATE TO PREVENT CONGESTION -->
+  <!-- CUSTOM TEMPLATE TO PREVENT CONGESTION -->
+  <ng-template #customCellTemplate let-day="day" let-locale="locale">
+    
+    <!-- Top area: Day Number -->
+    <div class="cal-cell-top">
+      <span class="cal-day-number">{{ day.date | calendarDate:'monthViewDayNumber':locale }}</span>
+    </div>
+    
+    <!-- Bottom area: The Short Bars -->
+    <div class="cal-events-container">
+      
+      <div *ngFor="let event of getEvents(day) | slice:0:3" 
+           class="cal-short-bar" 
+           [style.backgroundColor]="event.color?.primary"
+           (click)="handleEvent(event); $event.stopPropagation()">
+        
+        <!-- NEW: Priority Dot Indicator -->
+        <span class="priority-dot dot-p-{{ event.meta?.priority_id || 1 }}" 
+              [title]="event.meta?.priority_id === 3 ? 'High Priority' : (event.meta?.priority_id === 2 ? 'Medium Priority' : 'Low Priority')">
+        </span>
+
+        <span class="bar-title">{{ event.title }}</span>
+      </div>
+
+      <div *ngIf="getEvents(day).length > 3" 
+           class="cal-overflow-badge"
+           (click)="dayClicked({date: day.date}); $event.stopPropagation()">
+        +{{ getEvents(day).length - 3 }} more
+      </div>
+
+    </div>
+  </ng-template>
   <!-- The Calendar Grid -->
   <mwl-calendar-month-view
     [viewDate]="viewDate"
     [events]="events"
-    (dayClicked)="dayClicked($event.day)"
-    (eventClicked)="handleEvent($event.event)">
+    [cellTemplate]="customCellTemplate" 
+    (dayClicked)="dayClicked($event.day)">
   </mwl-calendar-month-view>
 
 </div>

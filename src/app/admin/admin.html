@@ -13,6 +13,9 @@
         <button [class.active]="view === 'dashboard'" (click)="setView('dashboard')"><mat-icon>home</mat-icon> Home</button>
         <button [class.active]="view === 'board'" (click)="setView('board')" [disabled]="!selectedProject"><mat-icon>view_kanban</mat-icon> Active Board</button>
         <button [class.active]="view === 'calendar'" (click)="setView('calendar')"><mat-icon>calendar_today</mat-icon> Calendar</button>
+        <button [class.active]="view === 'activity'" (click)="setView('activity')">
+  <mat-icon>history</mat-icon> Activity Log
+</button>
       </nav>
     </div>
 
@@ -98,7 +101,7 @@
         <div class="board-stats-row" *ngIf="!isLoadingBoard">
           <span><strong>{{totalBoardTasks}}</strong> Total Tasks</span>
           <span class="dot-separator">•</span>
-          <span style="color: #9ca3af;"><strong>{{todoCount}}</strong> To Do</span>
+          <span style="color: #9ca3af96;"><strong>{{todoCount}}</strong> To Do</span>
           <span class="dot-separator">•</span>
           <span style="color: #f59e0b;"><strong>{{inProgressCount}}</strong> In Progress</span>
           <span class="dot-separator">•</span>
@@ -128,7 +131,7 @@
           <!-- TO DO COLUMN -->
           <div class="kanban-col">
             <div class="col-header">
-              <div class="col-title"><span class="dot todo"></span> To Do <span class="count">{{ board.TODO?.length || 0 }}</span></div>
+              <div class="col-title"><span class="dot todo"></span> To Do <span class="count">{{ board.TODO.length || 0 }}</span></div>
             </div>
             <div class="col-body" cdkDropList id="list-todo" [cdkDropListData]="board.TODO" [cdkDropListConnectedTo]="['list-prog', 'list-done']" (cdkDropListDropped)="drop($event, 'TODO')">
               <div class="issue-card" *ngFor="let t of board.TODO" cdkDrag (click)="openTaskDialog(t)">
@@ -170,7 +173,7 @@
           <!-- IN PROGRESS COLUMN -->
           <div class="kanban-col">
             <div class="col-header">
-              <div class="col-title"><span class="dot progress"></span> In Progress <span class="count">{{ board.IN_PROGRESS?.length || 0 }}</span></div>
+              <div class="col-title"><span class="dot progress"></span> In Progress <span class="count">{{ board.IN_PROGRESS.length || 0 }}</span></div>
             </div>
             <div class="col-body" cdkDropList id="list-prog" [cdkDropListData]="board.IN_PROGRESS" [cdkDropListConnectedTo]="['list-todo', 'list-done']" (cdkDropListDropped)="drop($event, 'IN_PROGRESS')">
               <div class="issue-card" *ngFor="let t of board.IN_PROGRESS" cdkDrag (click)="openTaskDialog(t)">
@@ -211,7 +214,7 @@
           <!-- DONE COLUMN -->
           <div class="kanban-col">
             <div class="col-header">
-              <div class="col-title"><span class="dot done"></span> Done <span class="count">{{ board.DONE?.length || 0 }}</span></div>
+              <div class="col-title"><span class="dot done"></span> Done <span class="count">{{ board.DONE.length || 0 }}</span></div>
             </div>
             <div class="col-body" cdkDropList id="list-done" [cdkDropListData]="board.DONE" [cdkDropListConnectedTo]="['list-todo', 'list-prog']" (cdkDropListDropped)="drop($event, 'DONE')">
               <div class="issue-card done-card" *ngFor="let t of board.DONE" cdkDrag (click)="openTaskDialog(t)">
@@ -288,8 +291,8 @@
 
             <div class="form-group">
               <label>Assign To</label>
-              <mat-select multiple [(ngModel)]="task.assignees" class="custom-mat-select" placeholder="Select Team Members...">
-                <mat-option *ngFor="let u of users" [value]="u.id">{{u.first_name || u.name || u.username}} ({{u.email}})</mat-option>
+              <mat-select multiple [(ngModel)]="task.task_assignees" class="custom-mat-select" placeholder="Select Team Members...">
+                <mat-option *ngFor="let u of users" [value]="u.id">{{u.first_name || u.last_name || u.username}} ({{u.email}})</mat-option>
               </mat-select>
             </div>
             <button class="primary-btn" (click)="createTask()">Create Issue</button>
@@ -319,7 +322,7 @@
 
               <div class="avatar-lg">{{getAvatar(u.id)}}</div>
               <div>
-                <h3 style="margin-bottom: 4px;">{{u.first_name || u.name || u.username}} {{u.last_name || ''}}</h3>
+                <h3 style="margin-bottom: 4px;">{{u.first_name || u.last_name || u.username}} {{u.last_name || ''}}</h3>
                 <span class="status-pill" [class.active]="u.status === 'ACTIVE'">{{u.status || 'ACTIVE'}}</span>
               </div>
             </div>
@@ -357,7 +360,113 @@
       <div *ngIf="view === 'calendar'" class="animate-fade calendar-wrapper">
         <app-calendar [projects]="projects" [users]="users" (taskCreated)="loadBoard(selectedProjectId)"></app-calendar>
       </div>
+     <!-- ================= GLOBAL ACTIVITY LOG ================= -->
+<div *ngIf="view === 'activity'" class="animate-fade">
+  <div class="page-header" style="margin-bottom: 24px;">
+    <h2>Global Workspace Activity</h2>
+    <p class="subtitle" style="color: var(--text-muted);">Recent actions across all projects.</p>
+  </div>
 
+  <div class="activity-feed-container" style="max-width: 800px;">
+    <div class="premium-card" style="padding: 0; background: #0b1121; border-color: rgba(255,255,255,0.05);">
+      
+      <!-- Loop through logs -->
+      <!-- Loop through logs -->
+<div class="activity-row" *ngFor="let log of globalAuditLogs" 
+     (click)="toggleLogDetails(log)"
+     style="display: flex; flex-direction: column; padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: background 0.2s;">
+  
+  <div style="display: flex; gap: 16px; align-items: flex-start; width: 100%;">
+    <!-- User Avatar -->
+    <div class="avatar-sm" style="background: #1f2937; color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1); width: 36px; height: 36px; font-size: 13px;">
+      {{ getAvatar(log.performed_by) }}
+    </div>
+    
+    <!-- Activity Content -->
+    <div style="flex: 1;">
+		  
+      <p style="margin: 0; font-size: 14px; color: #e2e8f0; line-height: 1.5;">
+								   
+        <strong style="color: #c7d2fe;">{{ getUserName(log.performed_by) }}</strong> 
+			
+																		
+        <span style="color: #9ca3af; margin: 0 4px;">{{ formatLogMessage(log) }}</span>
+			
+																					
+       <span *ngIf="log.entity_type === 'TASK'" 
+      (click)="fetchAndOpenTask($event, log.entity_id)"
+      style="background: rgba(99, 102, 241, 0.1); color: #818cf8; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-family: monospace; border: 1px solid rgba(99,102,241,0.2); cursor: pointer; transition: background 0.2s;"
+      onmouseover="this.style.background='rgba(99, 102, 241, 0.2)'"
+      onmouseout="this.style.background='rgba(99, 102, 241, 0.1)'">
+   {{ log.entity_id | slice:0:8 }}
+</span>
+      </p>
+      
+      <!-- Metadata Row -->
+      <div style="display: flex; align-items: center; gap: 6px; margin-top: 8px;">
+        <mat-icon [style.color]="getLogColor(log)" style="font-size: 14px; width: 14px; height: 14px;">
+          {{ getLogIcon(log) }}
+        </mat-icon>
+        <span style="font-size: 12px; color: #6b7280;">{{ log.performed_at | date:'MMM d, y, h:mm a' }}</span>
+				
+
+			  
+      </div>
+    </div>
+
+    <!-- Expand Chevron -->
+    <mat-icon style="color: #6b7280; transition: transform 0.3s;" 
+              [style.transform]="log.expanded ? 'rotate(180deg)' : 'rotate(0deg)'">
+      expand_more
+    </mat-icon>
+  </div>
+
+  <!-- EXPANDED DIFF VIEW -->
+  <div *ngIf="log.expanded" class="log-details animate-fade" 
+       style="margin-left: 52px; margin-top: 16px; background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+    
+    <!-- No changes message -->
+    <div *ngIf="getLogChanges(log).length === 0" style="color: #9ca3af; font-size: 13px;">
+      No specific property changes recorded.
+    </div>
+
+    <!-- Change List -->
+    <!-- Change List -->
+    <div *ngFor="let change of getLogChanges(log)" style="display: flex; align-items: center; gap: 12px; font-size: 13px; margin-bottom: 8px;">
+      
+      <!-- If it's an UPDATE (Old value exists) -->
+      <ng-container *ngIf="change.oldVal !== 'None'">
+        <strong style="color: #9ca3af; width: 120px;">{{ change.key }}:</strong>
+        <span style="color: #f87171; text-decoration: line-through; background: rgba(248, 113, 113, 0.1); padding: 2px 6px; border-radius: 4px;">
+          {{ change.oldVal }}
+        </span>
+        <mat-icon style="font-size: 14px; width: 14px; height: 14px; color: #6b7280;">arrow_forward</mat-icon>
+        <span style="color: #34d399; background: rgba(52, 211, 153, 0.1); padding: 2px 6px; border-radius: 4px;">
+          {{ change.newVal }}
+        </span>
+      </ng-container>
+
+      <!-- If it's NEW (No old value existed) -->
+      <ng-container *ngIf="change.oldVal === 'None'">
+        <strong style="color: #9ca3af; width: 120px;">Set {{ change.key }} to:</strong>
+        <span style="color: #818cf8; background: rgba(129, 140, 248, 0.1); padding: 2px 6px; border-radius: 4px;">
+          {{ change.newVal }}
+        </span>
+      </ng-container>
+
+    </div>
+  </div>
+</div>
+
+      <!-- Empty State -->
+      <div *ngIf="globalAuditLogs.length === 0" style="padding: 40px; text-align: center; color: #6b7280;">
+        <mat-icon style="font-size: 48px; width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.5;">history</mat-icon>
+        <p>No recent activity found.</p>
+      </div>
+
+    </div>
+  </div>
+</div>
     </div> <!-- Closes content-scrollable -->
   </main> <!-- Closes main-content -->
 </div> <!-- Closes premium-layout -->

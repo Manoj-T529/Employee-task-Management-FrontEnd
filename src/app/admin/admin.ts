@@ -1,1434 +1,62 @@
-// import { Component, OnInit } from '@angular/core';
-// import { CommonModule } from '@angular/common';
-// import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
-// import { Router } from '@angular/router';
-// import { debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs/operators';
-// import { Task } from '../models/task.model';
-// import { TaskService } from '../services/task.service';
-// import { ProjectService } from '../services/project.service';
-// import { UserService } from '../services/user.service';
-// import { User } from '../models/user.model';
-// import { CreateUserDto } from '../models/create-user.dto';
-// import { AdminUserService } from '../services/admin-user.service';
-// import { AdminView } from '../models/admin.types';
-// import { MaterialModule } from '../shared/material.module';
-// import { CalendarComponent } from '../features/calendar/calendar.component';
 
-// // @Component({
-// //   selector: 'app-admin',
-// //   standalone: true,
-// //   imports: [CommonModule, FormsModule, ReactiveFormsModule],
-// //   templateUrl: './admin.html',
-// //   styleUrls: ['./admin.css']
-// // })
-// // export class Admin implements OnInit {
 
-// //   tasks: Task[] = [];
-// //   employees: User[] = [];
-// //   employeesList: User[] = [];
-// //   employeeSearchControl = new FormControl('');
-// //   selectedEmployee: User | null = null;
-// //   isSearchingEmployees = false;
-// //   showEmployeeDropdown = false;
-
-// //   page = 0;
-// //   size = 10;
-// //   isDarkMode = false;
-
- 
-
-// //  currentView: AdminView = 'dashboard';
-
-
-// //  newTask: {
-// //   title: string;
-// //   description: string;
-// //   assignedTo?: number;
-// //   status: 'To Do' | 'In Progress' | 'Completed';
-// // } = {
-// //   title: '',
-// //   description: '',
-// //   status: 'To Do'
-// // };
-
-// // newEmployee: CreateUserDto = {
-// //   name: '',
-// //   email: '',
-// //   password: ''
-// // };
-
-  
-// //   constructor(
-// //     private taskService: TaskService,
-// //     private userService: UserService,
-// //     private adminService: AdminUserService,
-// //     private router: Router
-// //   ) {}
-
-// //   ngOnInit() {
-// //     this.loadTasks();
-// //     this.loadEmployees();
-// //     this.initEmployeeSearch();
-
-// //     const savedTheme = localStorage.getItem('theme');
-// //     if (savedTheme === 'light') this.isDarkMode = false;
-// //   }
-
-// //   /* ---------------- TASKS ---------------- */
-
-// //   private loadTasks(): void {
-// //     this.taskService.getTasks().subscribe({
-// //       next: (tasks: Task[]) => this.tasks = tasks,
-// //       error: (err) => console.error(err)
-// //     });
-// //   }
-
-// //  createTask(): void {
-// //   if (!this.newTask.title || !this.selectedEmployee) return;
-
-// //   const payload = {
-// //     ...this.newTask,
-// //     assignedTo: this.selectedEmployee.id
-// //   };
-
-// //   this.taskService.createTask(payload).subscribe({
-// //     next: () => {
-// //       this.resetForm();
-// //       this.setView('manage');
-// //       this.loadTasks();
-// //     }
-// //   });
-// // }
-
-
-// //   changeStatus(taskId: number, status: Task['status']) {
-// //     this.taskService.updateStatus(taskId, status).subscribe({
-// //       next: () => this.loadTasks(),
-// //       error: (err) => console.error(err)
-// //     });
-// //   }
-
-
-// //   private initEmployeeSearch(): void {
-// //     this.employeeSearchControl.valueChanges.pipe(
-// //       debounceTime(400),
-// //       distinctUntilChanged(),
-// //       tap(() => {
-// //         this.isSearchingEmployees = true;
-// //         this.showEmployeeDropdown = true;
-// //       }),
-// //       switchMap(value =>
-// //         this.userService.searchEmployees(value || '', this.page, this.size)
-// //       )
-// //     ).subscribe({
-// //       next: (res: any) => {
-// //         this.employees = res.content || [];
-// //         this.isSearchingEmployees = false;
-// //       },
-// //       error: () => this.isSearchingEmployees = false
-// //     });
-// //   }
-
-// //   selectEmployee(emp: User): void {
-// //     this.selectedEmployee = emp;
-// //     this.employeeSearchControl.setValue(emp.name, { emitEvent: false });
-// //     this.showEmployeeDropdown = false;
-// //   }
-
-// //   clearSelectedEmployee(): void {
-// //     this.selectedEmployee = null;
-// //     this.employeeSearchControl.setValue('');
-// //   }
-
-// //  private resetForm(): void {
-// //   this.newTask = {
-// //     title: '',
-// //     description: '',
-// //     status: 'To Do'
-// //   };
-
-// //   this.selectedEmployee = null;
-// //   this.employeeSearchControl.setValue('');
-// // }
-
-
-
-// // createEmployee(): void {
-// //   if (!this.newEmployee.name || !this.newEmployee.email || !this.newEmployee.password) {
-// //     return;
-// //   }
-
-// //   this.adminService.createEmployee(this.newEmployee).subscribe({
-// //     next: () => {
-// //       this.newEmployee = { name: '', email: '', password: '' };
-// //       this.loadEmployees();
-// //     },
-// //     error: (err) => console.error(err)
-// //   });
-// // }
-
-// // loadEmployees(): void {
-// //   this.adminService.getEmployees().subscribe({
-// //     next: (res: any) => {
-// //       this.employeesList = res.data;   // 👈 important change
-// //     },
-// //     error: (err) => console.error(err)
-// //   });
-// // }
-
-
-// // deleteTask(id: number): void {
-// //   if (!confirm('Are you sure you want to delete this task?')) return;
-
-// //   this.taskService.deleteTask(id).subscribe({
-// //     next: () => this.loadTasks(),
-// //     error: (err) => console.error(err)
-// //   });
-// // }
-
-
-// // deleteEmployee(id: number): void {
-// //   if (!confirm('Are you sure you want to delete this employee?')) return;
-
-// //   this.adminService.deleteEmployee(id).subscribe({
-// //     next: () => this.loadEmployees(),
-// //     error: (err) => console.error(err)
-// //   });
-// // }
-
-
-
-// //   /* ---------------- UI ---------------- */
-
-// //   toggleTheme() {
-// //     this.isDarkMode = !this.isDarkMode;
-// //     document.body.classList.toggle('light-theme', !this.isDarkMode);
-// //     localStorage.setItem('theme', this.isDarkMode ? 'dark' : 'light');
-// //   }
-
-// //    setView(view: AdminView) {
-// //     this.currentView = view;
-// //   }
-
-// //   logout() {
-// //     localStorage.removeItem('token');
-// //     this.router.navigate(['/']);
-// //   }
-
-// //   /* ---------------- Dashboard ---------------- */
-
-// //   get totalTasks() { return this.tasks.length; }
-// //   get todoCount() { return this.tasks.filter(t => t.status === 'To Do').length; }
-// //   get inProgressCount() { return this.tasks.filter(t => t.status === 'In Progress').length; }
-// //   get completedCount() { return this.tasks.filter(t => t.status === 'Completed').length; }
-// // }
-
-
-// @Component({
-//   selector: 'app-admin',
-//   standalone: true,
-//   imports: [CommonModule, FormsModule, ReactiveFormsModule, MaterialModule, CalendarComponent],
-//   templateUrl: './admin.html',
-//   styleUrls: ['./admin.css']
-// })
-// export class Admin {
-
-// view:any='dashboard'
-
-// projects:any[]=[]
-// users:any[]=[]
-
-
-
-// task:any={
-//  title:'',
-//  project_id:'',
-//  priority_id:2,
-//  assignees:[],
-//  due_date:null
-// }
-
-// selectedProject:any=null
-
-// board:any={
-//  TODO:[],
-//  IN_PROGRESS:[],
-//  DONE:[]
-// }
-
-// employee:any={
-//  name:'',
-//  email:'',
-//  password:''
-// }
-
-// newProject:any={
-//  name:''
-// }
-
-// constructor(
-// private taskService:TaskService,
-// private projectService:ProjectService,
-// private adminService:AdminUserService
-// ){}
-
-// ngOnInit(){
-
-// this.loadProjects()
-// this.loadUsers()
-
-// }
-
-// setView(v:any){
-// this.view=v
-// }
-
-// loadProjects(){
-
-// this.projectService
-// .getProjects()
-// .subscribe(r=>this.projects=r)
-
-// }
-
-// loadBoard(projectId:string){
-
-// this.taskService
-// .getTasks(projectId)
-// .subscribe((res:any)=>{
-
-//  this.board=res
-
-// })
-
-// }
-
-// openProject(p:any){
-
-// this.selectedProject=p
-
-// this.setView('projectBoard')
-
-// this.loadBoard(p.id)
-
-// }
-
-// loadUsers(){
-
-// // this.adminService
-// // .getEmployees()
-// // .subscribe(r=>this.users=r.data)
-
-// }
-
-// toggleTheme() {
-
-// document.body.classList.toggle('light-theme')
-
-// }
-
-// createProject(){
-
-// this.projectService
-// .createProject(this.newProject)
-// .subscribe(()=>this.loadProjects())
-
-// }
-
-// createTask(){
-
-// this.taskService
-// .createTask(this.task)
-// .subscribe(()=>alert("created"))
-
-// }
-
-// createEmployee(){
-
-// this.adminService
-// .createEmployee(this.employee)
-// .subscribe(()=>alert("created"))
-
-// }
-
-// }
-
-// import { Component, OnInit } from '@angular/core';
-// import { CommonModule } from '@angular/common';
-// import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-// import { MaterialModule } from '../shared/material.module';
-// import { CalendarComponent } from '../features/calendar/calendar.component';
-
-// import { TaskService } from '../services/task.service';
-// import { ProjectService } from '../services/project.service';
-// import { AdminUserService } from '../services/admin-user.service';
-// import { AuthService } from '../services/auth.service';
-// import { Router } from '@angular/router';
-
-// @Component({
-//   selector: 'app-admin',
-//   standalone: true,
-//   imports: [CommonModule, FormsModule, ReactiveFormsModule, MaterialModule, CalendarComponent],
-//   templateUrl: './admin.html',
-//   styleUrls: ['./admin.css']
-// })
-// export class Admin implements OnInit {
-
-//   view: any = 'dashboard';
-//   projects: any[] = [];
-//   users: any[] = [];
-
-//   task: any = {
-//     title: '',
-//     project_id: '',
-//     priority_id: 2,
-//     assignees: [],
-//     due_date: null
-//   };
-
-//   selectedProject: any = null;
-//   board: any = {
-//     TODO: [],
-//     IN_PROGRESS: [],
-//     DONE: []
-//   };
-
-//   employee: any = {
-//     name: '',
-//     email: '',
-//     password: ''
-//   };
-
-//   newProject: any = { name: '', description: '' };
-
-//   constructor(
-//     private taskService: TaskService,
-//     private projectService: ProjectService,
-//     private adminService: AdminUserService,
-//     private authService: AuthService,
-//     private router: Router
-//   ) {}
-
-//   ngOnInit() {
-//     this.loadProjects();
-//     this.loadUsers();
-//   }
-
-//   setView(v: any) {
-//     this.view = v;
-//   }
-
-//   loadProjects() {
-//     this.projectService.getProjects().subscribe(r => this.projects = r);
-//   }
-
-//   loadBoard(projectId: string) {
-//     this.taskService.getBoard(projectId).subscribe((res: any) => {
-//       this.board = res;
-//     });
-//   }
-
-//   openProject(p: any) {
-//     this.selectedProject = p;
-//     this.setView('projectBoard');
-//     this.loadBoard(p.id);
-//   }
-
-//   loadUsers() {
-//     this.adminService.getEmployees().subscribe(r => this.users = r);
-//   }
-
-//   toggleTheme() {
-//     document.body.classList.toggle('light-theme');
-//   }
-
-//   logout() {
-//     this.authService.logout().subscribe(() => {
-//       this.router.navigate(['/']);
-//     });
-//   }
-
-//   createProject() {
-//     this.projectService.createProject(this.newProject).subscribe(() => {
-//       alert("Project Created");
-//       this.newProject = { name: '', description: '' };
-//       this.loadProjects();
-//     });
-//   }
-
-//   createTask() {
-//     this.taskService.createTask(this.task).subscribe(() => {
-//       alert("Task Created");
-//       this.task = { title: '', project_id: '', priority_id: 2, assignees: [], due_date: null };
-//     });
-//   }
-
-//   createEmployee() {
-//     this.adminService.createEmployee(this.employee).subscribe(() => {
-//       alert("Employee Created");
-//       this.employee = { name: '', email: '', password: '' };
-//       this.loadUsers();
-//     });
-//   }
-// }
-
-
-// import { Component, OnInit } from '@angular/core';
-
-// import { CommonModule } from '@angular/common';
-// import { FormsModule } from '@angular/forms';
-
-// import { DragDropModule } from '@angular/cdk/drag-drop';
-
-// import {
-//   CdkDragDrop,
-//   moveItemInArray,
-//   transferArrayItem
-// } from '@angular/cdk/drag-drop';
-
-// import { MaterialModule } from '../shared/material.module';
-
-// import { TaskService } from '../services/task.service';
-// import { ProjectService } from '../services/project.service';
-// import { AdminUserService } from '../services/admin-user.service';
-
-// import { MatDialog } from '@angular/material/dialog';
-
-// import { TaskDialog } from '../task-dialog/task-dialog';
-
-// @Component({
-//   selector: 'app-admin',
-//   standalone: true,
-//   imports: [
-//     CommonModule,
-//     FormsModule,
-//     MaterialModule,
-//     DragDropModule
-//   ],
-//   templateUrl: './admin.html',
-//   styleUrls: ['./admin.css']
-// })
-// export class Admin implements OnInit {
-
-//   view = 'dashboard';
-
-//   projects: any[] = [];
-
-//   users: any[] = [];
-
-//   selectedProject: any = null;
-
-//   search = '';
-
-//   filterUser = '';
-
-//   board: any = {
-//     TODO: [],
-//     IN_PROGRESS: [],
-//     DONE: []
-//   };
-
-//   constructor(
-//     private taskService: TaskService,
-//     private projectService: ProjectService,
-//     private adminService: AdminUserService,
-//     private dialog: MatDialog
-//   ) {}
-
-//   ngOnInit() {
-
-//     this.loadProjects();
-
-//     this.loadUsers();
-
-//   }
-
-
-//   setView(v: any) {
-
-//     this.view = v;
-
-//   }
-
-
-//   loadProjects() {
-
-//     this.projectService
-//       .getProjects()
-//       .subscribe(r => this.projects = r);
-
-//   }
-
-
-//   loadUsers() {
-
-//     this.adminService
-//       .getEmployees()
-//       .subscribe(r => this.users = r);
-
-//   }
-
-
-//   openProject(p: any) {
-
-//     this.selectedProject = p;
-
-//     this.view = 'board';
-
-//     this.loadBoard(p.id);
-
-//   }
-
-
-//   loadBoard(id: string) {
-
-//     this.taskService
-//       .getBoard(id)
-//       .subscribe((r: any) => {
-
-//         this.board = r;
-
-//       });
-
-//   }
-
-// getStatusId(status: string) {
-
-//   if (status === 'TODO') return 1;
-
-//   if (status === 'IN_PROGRESS') return 2;
-
-//   if (status === 'DONE') return 3;
-
-//   return 1;
-
-// }
-
-//   drop(event: CdkDragDrop<any[]>, status: string) {
-
-//   if (event.previousContainer === event.container) {
-
-//     moveItemInArray(
-//       event.container.data,
-//       event.previousIndex,
-//       event.currentIndex
-//     );
-
-//   } else {
-
-//     transferArrayItem(
-//       event.previousContainer.data,
-//       event.container.data,
-//       event.previousIndex,
-//       event.currentIndex
-//     );
-
-//     const task =
-//       event.container.data[event.currentIndex];
-
-//     const statusId =
-//       this.getStatusId(status);
-
-//     this.taskService
-//       .updateStatus(
-//         task.id,
-//         statusId
-//       )
-//       .subscribe();
-
-//   }
-
-// }
-
-
-//   openTask(task: any) {
-
-//     const ref = this.dialog.open(
-//       TaskDialog,
-//       {
-//         width: '500px',
-//         data: {
-//           ...task,
-//           users: this.users
-//         }
-//       }
-//     );
-
-//     ref.afterClosed().subscribe(r => {
-
-//       if (!r) return;
-
-//       this.taskService
-//         .updateTask(r.id, r)
-//         .subscribe(() => {
-
-//           this.loadBoard(
-//             this.selectedProject.id
-//           );
-
-//         });
-
-//     });
-
-//   }
-
-
-//   getAvatar(id: any) {
-
-//     const u =
-//       this.users.find(
-//         x => x.id == id
-//       );
-
-//     return u ? u.name[0] : '?';
-
-//   }
-
-
-//   filterTasks(list: any[]) {
-
-//     return list.filter(t => {
-
-//       if (
-//         this.search &&
-//         !t.title
-//           .toLowerCase()
-//           .includes(
-//             this.search.toLowerCase()
-//           )
-//       )
-//         return false;
-
-//       if (
-//         this.filterUser &&
-//         !t.assignees?.includes(
-//           this.filterUser
-//         )
-//       )
-//         return false;
-
-//       return true;
-
-//     });
-
-//   }
-
-// }
-
-
-// import { Component, OnInit } from '@angular/core';
-
-// import { CommonModule } from '@angular/common';
-// import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-
-// import {
-//   CdkDragDrop,
-//   moveItemInArray,
-//   transferArrayItem
-// } from '@angular/cdk/drag-drop';
-
-// import { DragDropModule } from '@angular/cdk/drag-drop';
-
-// import { MaterialModule } from '../shared/material.module';
-
-// import { CalendarComponent } from '../features/calendar/calendar.component';
-
-// import { TaskService } from '../services/task.service';
-// import { ProjectService } from '../services/project.service';
-// import { AdminUserService } from '../services/admin-user.service';
-// import { AuthService } from '../services/auth.service';
-
-// import { Router } from '@angular/router';
-
-// import { MatDialog } from '@angular/material/dialog';
-
-// import { TaskDialog } from '../task-dialog/task-dialog';
-
-// @Component({
-//   selector: 'app-admin',
-//   standalone: true,
-//   imports: [
-//     CommonModule,
-//     FormsModule,
-//     ReactiveFormsModule,
-//     MaterialModule,
-//     CalendarComponent,
-//     DragDropModule
-//   ],
-//   templateUrl: './admin.html',
-//   styleUrls: ['./admin.css']
-// })
-// export class Admin implements OnInit {
-
-//   view: any = 'dashboard';
-
-//   projects: any[] = [];
-
-//   users: any[] = [];
-
-//   selectedProject: any = null;
-
-//   search = '';
-
-//   filterUser = '';
-
-//   board: any = {
-//     TODO: [],
-//     IN_PROGRESS: [],
-//     DONE: []
-//   };
-
-//   task: any = {
-//     title: '',
-//     project_id: '',
-//     priority_id: 2,
-//     assignees: [],
-//     due_date: null
-//   };
-
-//   employee: any = {
-//     name: '',
-//     email: '',
-//     password: ''
-//   };
-
-//   newProject: any = {
-//     name: '',
-//     description: ''
-//   };
-
-//   constructor(
-//     private taskService: TaskService,
-//     private projectService: ProjectService,
-//     private adminService: AdminUserService,
-//     private authService: AuthService,
-//     private router: Router,
-//     private dialog: MatDialog
-//   ) {}
-
-//   ngOnInit() {
-
-//     this.loadProjects();
-
-//     this.loadUsers();
-
-//   }
-
-
-//   setView(v: any) {
-
-//     this.view = v;
-
-//   }
-
-
-//   toggleTheme() {
-
-//     document.body.classList.toggle('light-theme');
-
-//   }
-
-
-//   loadProjects() {
-
-//     this.projectService
-//       .getProjects()
-//       .subscribe(r => this.projects = r);
-
-//   }
-
-
-//   loadUsers() {
-
-//     this.adminService
-//       .getEmployees()
-//       .subscribe(r => this.users = r);
-
-//   }
-
-
-//   openProject(p: any) {
-
-//     this.selectedProject = p;
-
-//     this.view = 'board';
-
-//     this.loadBoard(p.id);
-
-//   }
-
-
-//   loadBoard(id: string) {
-
-//     this.taskService
-//       .getBoard(id)
-//       .subscribe(r => this.board = r);
-
-//   }
-
-
-//   getStatusId(s: string) {
-
-//     if (s === 'TODO') return 1;
-//     if (s === 'IN_PROGRESS') return 2;
-//     if (s === 'DONE') return 3;
-
-//     return 1;
-
-//   }
-
-
-//   drop(event: CdkDragDrop<any[]>, status: string) {
-
-//     if (event.previousContainer === event.container) {
-
-//       moveItemInArray(
-//         event.container.data,
-//         event.previousIndex,
-//         event.currentIndex
-//       );
-
-//     } else {
-
-//       transferArrayItem(
-//         event.previousContainer.data,
-//         event.container.data,
-//         event.previousIndex,
-//         event.currentIndex
-//       );
-
-//       const task =
-//         event.container.data[event.currentIndex];
-
-//       const statusId =
-//         this.getStatusId(status);
-
-//       this.taskService
-//         .updateStatus(
-//           task.id,
-//           statusId
-//         )
-//         .subscribe();
-
-//     }
-
-//   }
-
-
-//   openTaskDialog(task: any) {
-
-//     const ref = this.dialog.open(
-//       TaskDialog,
-//       {
-//         width: '500px',
-//         data: {
-//           ...task,
-//           users: this.users
-//         }
-//       }
-//     );
-
-//     ref.afterClosed().subscribe(r => {
-
-//       if (!r) return;
-
-//       this.taskService
-//         .updateTask(r.id, r)
-//         .subscribe(() => {
-
-//           this.loadBoard(
-//             this.selectedProject.id
-//           );
-
-//         });
-
-//     });
-
-//   }
-
-
-//   getAvatar(id: any) {
-
-//     const u =
-//       this.users.find(
-//         x => x.id == id
-//       );
-
-//     return u ? u.name[0] : '?';
-
-//   }
-
-
-//   filterTasks(list: any[]) {
-
-//     return list.filter(t => {
-
-//       if (
-//         this.search &&
-//         !t.title
-//           .toLowerCase()
-//           .includes(
-//             this.search.toLowerCase()
-//           )
-//       )
-//         return false;
-
-//       if (
-//         this.filterUser &&
-//         !t.assignees?.includes(
-//           this.filterUser
-//         )
-//       )
-//         return false;
-
-//       return true;
-
-//     });
-
-//   }
-
-
-//   createProject() {
-
-//     this.projectService
-//       .createProject(this.newProject)
-//       .subscribe(() => {
-
-//         this.newProject = {
-//           name: '',
-//           description: ''
-//         };
-
-//         this.loadProjects();
-
-//       });
-
-//   }
-
-
-//   createTask() {
-
-//     this.taskService
-//       .createTask(this.task)
-//       .subscribe(() => {
-
-//         this.task = {
-//           title: '',
-//           project_id: '',
-//           priority_id: 2,
-//           assignees: [],
-//           due_date: null
-//         };
-
-//       });
-
-//   }
-
-
-//   createEmployee() {
-
-//     this.adminService
-//       .createEmployee(this.employee)
-//       .subscribe(() => {
-
-//         this.employee = {
-//           name: '',
-//           email: '',
-//           password: ''
-//         };
-
-//         this.loadUsers();
-
-//       });
-
-//   }
-
-
-//   logout() {
-
-//     this.authService.logout().subscribe(() => {
-
-//       this.router.navigate(['/']);
-
-//     });
-
-//   }
-
-// }
-
-// import { Component, OnInit } from '@angular/core';
-
-// import { CommonModule } from '@angular/common';
-// import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-
-// import {
-//   CdkDragDrop,
-//   moveItemInArray,
-//   transferArrayItem
-// } from '@angular/cdk/drag-drop';
-
-// import { DragDropModule } from '@angular/cdk/drag-drop';
-
-// import { MaterialModule } from '../shared/material.module';
-
-// import { CalendarComponent } from '../features/calendar/calendar.component';
-
-// import { TaskService } from '../services/task.service';
-// import { ProjectService } from '../services/project.service';
-// import { AdminUserService } from '../services/admin-user.service';
-
-// import { MatDialog } from '@angular/material/dialog';
-// import { TaskDialog } from '../task-dialog/task-dialog';
-
-// @Component({
-//   selector: 'app-admin',
-//   standalone: true,
-//   imports: [
-//     CommonModule,
-//     FormsModule,
-//     ReactiveFormsModule,
-//     MaterialModule,
-//     CalendarComponent,
-//     DragDropModule
-//   ],
-//   templateUrl: './admin.html',
-//   styleUrls: ['./admin.css']
-// })
-// export class Admin implements OnInit {
-
-//   view:any = 'dashboard'
-
-//   projects:any[]=[]
-//   users:any[]=[]
-
-//   selectedProject:any=null
-//   selectedProjectId:any=null
-
-//   search=''
-//   filterUser=''
-
-//   board:any={
-//     TODO:[],
-//     IN_PROGRESS:[],
-//     DONE:[]
-//   }
-
-//   task:any={
-//     title:'',
-//     project_id:'',
-//     priority_id:2,
-//     assignees:[],
-//     due_date:null
-//   }
-
-//   employee:any={
-//     name:'',
-//     email:'',
-//     password:''
-//   }
-
-//   newProject:any={
-//     name:'',
-//     description:''
-//   }
-
-
-//   constructor(
-//     private taskService:TaskService,
-//     private projectService:ProjectService,
-//     private adminService:AdminUserService,
-//     private dialog:MatDialog
-//   ){}
-
-//   ngOnInit(){
-
-//     this.loadProjects()
-//     this.loadUsers()
-
-//   }
-
-
-//   setView(v:any){
-
-//     this.view=v
-
-//   }
-
-
-//   loadProjects(){
-
-//     this.projectService
-//     .getProjects()
-//     .subscribe(r=>this.projects=r)
-
-//   }
-
-
-//   loadUsers(){
-
-//     this.adminService
-//     .getEmployees()
-//     .subscribe(r=>this.users=r)
-
-//   }
-
-
-//   changeProject(){
-
-//     if(!this.selectedProjectId) return
-
-//     this.openProject({
-//       id:this.selectedProjectId
-//     })
-
-//   }
-
-
-//   openProject(p:any){
-
-//     this.selectedProject=p
-
-//     this.view='board'
-
-//     this.loadBoard(p.id)
-
-//   }
-
-
-//   loadBoard(id:string){
-
-//     this.taskService
-//     .getBoard(id)
-//     .subscribe(r=>this.board=r)
-
-//   }
-
-
-//   getStatusId(s:string){
-
-//     if(s==='TODO') return 1
-//     if(s==='IN_PROGRESS') return 2
-//     if(s==='DONE') return 3
-
-//     return 1
-
-//   }
-
-
-//   drop(event:CdkDragDrop<any[]>,status:string){
-
-//     if(event.previousContainer===event.container){
-
-//       moveItemInArray(
-//         event.container.data,
-//         event.previousIndex,
-//         event.currentIndex
-//       )
-
-//     }else{
-
-//       transferArrayItem(
-//         event.previousContainer.data,
-//         event.container.data,
-//         event.previousIndex,
-//         event.currentIndex
-//       )
-
-//       const task=
-//       event.container.data[event.currentIndex]
-
-//       const statusId=
-//       this.getStatusId(status)
-
-//       this.taskService
-//       .updateStatus(task.id,statusId)
-//       .subscribe()
-
-//     }
-
-//   }
-
-
-//   openTaskDialog(task:any){
-
-//     const ref=this.dialog.open(
-//       TaskDialog,
-//       {
-//         width:'500px',
-//         data:{
-//           ...task,
-//           users:this.users
-//         }
-//       }
-//     )
-
-//     ref.afterClosed()
-//     .subscribe(r=>{
-
-//       if(!r) return
-
-//       this.taskService
-//       .updateTask(r.id,r)
-//       .subscribe(()=>{
-//         this.loadBoard(
-//           this.selectedProject.id
-//         )
-//       })
-
-//     })
-
-//   }
-
-
-//   getAvatar(id:any){
-
-//     const u=
-//     this.users.find(
-//       x=>x.id==id
-//     )
-
-//     return u ? u.name[0] : '?'
-
-//   }
-
-
-//   filterTasks(list:any[]){
-
-//     return list.filter(t=>{
-
-//       if(
-//         this.search &&
-//         !t.title
-//         .toLowerCase()
-//         .includes(
-//           this.search.toLowerCase()
-//         )
-//       ) return false
-
-//       if(
-//         this.filterUser &&
-//         !t.assignees?.includes(
-//           this.filterUser
-//         )
-//       ) return false
-
-//       return true
-
-//     })
-
-//   }
-
-
-//   createProject(){
-
-//     this.projectService
-//     .createProject(this.newProject)
-//     .subscribe(()=>{
-
-//       this.newProject={
-//         name:'',
-//         description:''
-//       }
-
-//       this.loadProjects()
-
-//     })
-
-//   }
-
-
-//   createTask(){
-
-//     this.taskService
-//     .createTask(this.task)
-//     .subscribe(()=>{
-
-//       this.task={
-//         title:'',
-//         project_id:'',
-//         priority_id:2,
-//         assignees:[],
-//         due_date:null
-//       }
-
-//     })
-
-//   }
-
-
-//   createEmployee(){
-
-//     this.adminService
-//     .createEmployee(this.employee)
-//     .subscribe(()=>{
-
-//       this.employee={
-//         name:'',
-//         email:'',
-//         password:''
-//       }
-
-//       this.loadUsers()
-
-//     })
-
-//   }
-
-// }
-
-import { Component, OnInit, ChangeDetectorRef  } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CdkDragDrop, moveItemInArray, transferArrayItem, DragDropModule } from '@angular/cdk/drag-drop';
+import { MatDialog } from '@angular/material/dialog';
+import { Router } from '@angular/router';
+import { Subject, forkJoin, takeUntil } from 'rxjs';
+
 import { MaterialModule } from '../shared/material.module';
 import { CalendarComponent } from '../features/calendar/calendar.component';
+import { TaskDialogComponent } from '../features/tasks/task-dialog';
+import { CommentsDialogComponent } from '../features/tasks/comments-dialog.component';
+import { ConfirmDialogComponent } from '../shared/confirm-dialog/confirm-dialog.component';
+
 import { TaskService } from '../services/task.service';
 import { ProjectService } from '../services/project.service';
 import { AdminUserService } from '../services/admin-user.service';
 import { AuthService } from '../services/auth.service';
-import { MatDialog } from '@angular/material/dialog';
-import { TaskDialogComponent } from '../features/tasks/task-dialog';
-import { Router } from '@angular/router';
-import { ConfirmDialogComponent } from '../shared/confirm-dialog/confirm-dialog.component';
+													 
+																	
+										 
+																						   
 import { ToastService } from '../shared/ui/toast.service';
-import { CommentsDialogComponent } from '../features/tasks/comments-dialog.component';
+import { Project, User, Task, Board, AuditLog } from '../models/types'; // Import strict types
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [
-    CommonModule, FormsModule, ReactiveFormsModule, MaterialModule,
-    CalendarComponent, DragDropModule
-  ],
+			
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, MaterialModule, CalendarComponent, DragDropModule],
+									 
+	
   templateUrl: './admin.html',
   styleUrls: ['./admin.css']
 })
-export class Admin implements OnInit {
-  view: string = 'dashboard';
-  projects: any[] = [];
-  users: any[] = [];
-   allUsers: any[] =[];
+export class Admin implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>(); // FAANG: Memory Leak Prevention
 
-  selectedProject: any = null;
+  view: string = 'dashboard';
+  projects: Project[] = [];
+  users: User[] = [];
+  allUsers: User[] = [];
+  globalAuditLogs: AuditLog[] = [];
+
+  selectedProject: Project | null = null;
   selectedProjectId: string = '';
+  
   isLoadingProjects: boolean = true;
   isLoadingBoard: boolean = false;
 
-  board: any = { TODO: [], IN_PROGRESS: [], DONE: [] };
+  board: Board = { TODO: [], IN_PROGRESS: [], DONE: [] };
 
-   task: any = { 
-    title: '', description: '', project_id: '', priority_id: 2, 
-    story_points: null, start_date: null, due_date: null, assignees: [] 
-  };
-  employee: any = { 
-    first_name: '', last_name: '', username: '', 
-    email: '', password: '', role: 'EMPLOYEE' 
-  };
-
-  // API Aligned Project Model
-  newProject: any = { 
-    name: '', description: '', start_date: null, end_date: null 
-  };
+				 
+  task: Partial<Task> = { title: '', description: '', project_id: '', priority_id: 2, story_points: undefined, start_date: undefined, due_date: undefined, task_assignees: [] as any };
+  newProject: Partial<Project> = { name: '', description: '', start_date: undefined, end_date: undefined };
+  employee: Partial<User> & { password?: string } = { first_name: '', last_name: '', username: '', email: '', password: '', role: 'EMPLOYEE' };
+					
 
   constructor(
     private taskService: TaskService,
@@ -1442,11 +70,40 @@ export class Admin implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.loadProjects();
-    this.loadUsers();
-     this.loadAllUsers(); 
+    this.loadInitialData();
   }
 
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  // FAANG: Parallel loading reduces TTFB (Time To First Byte) bottleneck
+  private loadInitialData() {
+    this.isLoadingProjects = true;
+    
+    forkJoin({
+      projects: this.projectService.getProjects(),
+      employees: this.adminService.getEmployees(),
+      allUsers: this.adminService.getAllUsers()
+    })
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (res: any) => {
+        this.projects = res.projects;
+        this.users = (res.employees.data || res.employees).filter((u: User) => !u.email?.includes('_deleted_'));
+        this.allUsers = (res.allUsers.data?.data || res.allUsers.data || res.allUsers).filter((u: User) => !u.email?.includes('_deleted_'));
+        this.isLoadingProjects = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.toast.error('Failed to load dashboard data');
+        this.isLoadingProjects = false;
+      }
+    });
+  }
+
+  // Getters for UI
   get activeUsers() { return this.users.filter(u => u.status === 'ACTIVE').length; }
   get inactiveUsers() { return this.users.filter(u => u.status !== 'ACTIVE').length; }
   get totalProjects() { return this.projects.length; }
@@ -1455,24 +112,105 @@ export class Admin implements OnInit {
   get inProgressCount() { return this.board.IN_PROGRESS?.length || 0; }
   get doneCount() { return this.board.DONE?.length || 0; }
   get totalBoardTasks() { return this.todoCount + this.inProgressCount + this.doneCount; }
+		  
+  setView(v: string) { 
+    this.view = v; 
+						   
+    if (v === 'activity') this.loadGlobalActivity();
+	 
+  }
 
-  // ================= OPEN COMMENTS =================
-  openCommentsDialog(event: Event, task: any) {
-    event.stopPropagation(); // Stop task edit dialog from opening
+  loadGlobalActivity() {
+    this.adminService.getGlobalActivity()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: any) => {
+																			   
+          this.globalAuditLogs = res.data?.data || res.data || res || [];
+          this.cdr.detectChanges();
+        },
+					   
+															 
+        error: () => this.toast.error('Failed to load activity logs')
+      });
+	   
+  }
+
+  openProject(p: Project) {
+    this.selectedProject = p;
+    this.selectedProjectId = p.id;
+    this.view = 'board';
+    this.loadBoard(p.id);
+  }
+  changeProject() {
+    if (!this.selectedProjectId) return;
+    const project = this.projects.find(p => p.id === this.selectedProjectId);
+    if (project) this.openProject(project);
+  }
+
+
+  loadBoard(id: string) {
+    this.isLoadingBoard = true;
+    this.taskService.getBoard(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (r: any) => {
+          this.board = { TODO: r.TODO || [], IN_PROGRESS: r.IN_PROGRESS || [], DONE: r.DONE || [] };
+          this.isLoadingBoard = false;
+          this.cdr.detectChanges(); 
+        },
+        error: () => {
+          this.toast.error('Failed to load board');
+          this.isLoadingBoard = false;
+        }
+      });
+  }
+
+  drop(event: CdkDragDrop<Task[]>, status: string) {
+    if (event.previousContainer === event.container) {
+      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+      return;															 
+    }
+   
+
+    // 1. Instantly update UI (Optimistic)
+    transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
+    
+    const task = event.container.data[event.currentIndex];
+    const statusId = status === 'TODO' ? 1 : (status === 'IN_PROGRESS' ? 2 : 3);
+
+    // 2. Fire Backend request
+    this.taskService.updateStatus(task.id, statusId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        error: (err) => {
+          // 3. Rollback if backend fails (e.g. Rate limit hit)
+          this.toast.error('Failed to move task. Reverting...');
+          transferArrayItem(event.container.data, event.previousContainer.data, event.currentIndex, event.previousIndex);									  
+        }
+      });
+  }
+
+  openCommentsDialog(event: Event, task: Task) {
+    event.stopPropagation();
     this.dialog.open(CommentsDialogComponent, {
-      width: '500px',
-      panelClass: 'premium-dialog',
-      data: { task: task, users: this.allUsers }
+      width: '500px', panelClass: 'premium-dialog',
+      data: { task, users: this.allUsers }
+    }); 
+  }
+
+  openTaskDialog(task: Task) {
+    const ref = this.dialog.open(TaskDialogComponent, {
+      width: '560px', panelClass: 'premium-dialog',
+      data: { ...task, users: this.allUsers } 
     });
+
+    ref.afterClosed().pipe(takeUntil(this.destroy$)).subscribe(updated => {
+      if (updated && this.selectedProject) this.loadBoard(this.selectedProject.id);																			     
+    });
+  
   }
 
-  logout() {
-    this.authService.logout().subscribe(() => this.router.navigate(['/']));
-  }
-
-  setView(v: string) { this.view = v; }
-
-  // projectService.getProjects() handles pagination mapping {data, meta}
   loadProjects() {
     this.isLoadingProjects = true;
     this.projectService.getProjects().subscribe(r => {
@@ -1500,75 +238,41 @@ loadUsers() {
         :[];
     });
   }
- 
 
-  // loadUsers() {
-  //    this.adminService.getEmployees().subscribe(r => {
-  //     // Filter out users that have been soft-deleted
-  //     this.users = r.filter((u: any) => !u.email.includes('_deleted_'));
-  //   });
-  // }
+ // --- FETCH & OPEN TASK FROM ACTIVITY LOG ---
+  fetchAndOpenTask(event: Event, taskId: string) {
+    // 1. Stop the click event so it doesn't ALSO trigger the row's expand/collapse
+    event.stopPropagation(); 
+																				
 
-  changeProject() {
-    if (!this.selectedProjectId) return;
-    const project = this.projects.find(p => p.id === this.selectedProjectId);
-    if (project) this.openProject(project);
-  }
-
-  openProject(p: any) {
-    this.selectedProject = p;
-    this.selectedProjectId = p.id;
-    this.view = 'board';
-    this.loadBoard(p.id);
-  }
-
-   loadBoard(id: string) {
-    this.isLoadingBoard = true;
-    this.taskService.getBoard(id).subscribe((r: any) => {
-      this.board = { TODO: r.TODO || [], IN_PROGRESS: r.IN_PROGRESS || [], DONE: r.DONE || [] };
-      this.isLoadingBoard = false; // Turn off skeleton
-       this.cdr.detectChanges(); 
+    // 2. Fetch the specific task using your TaskService
+    this.taskService.getTaskById(taskId).subscribe({
+									 
+				  
+      next: (res: any) => {
+        // Depending on your backend, the task might be wrapped in a 'data' object
+        const taskDetails = res.data || res; 
+        
+        if (taskDetails) {
+          this.openTaskDialog(taskDetails);
+        } else {
+          this.toast.error('Task not found.');
+        }
+      },
+      error: (err: any) => {
+        console.error('Error fetching task:', err);
+        this.toast.error('Could not load task. It may have been deleted.');
+      }
     });
   }
 
-  getStatusId(s: string) {
-    if (s === 'TODO') return 1;
-    if (s === 'IN_PROGRESS') return 2;
-    if (s === 'DONE') return 3;
-    return 1;
-  }
-
-  drop(event: CdkDragDrop<any[]>, status: string) {
-    if (event.previousContainer === event.container) {
-      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
-    } else {
-      transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
-      const task = event.container.data[event.currentIndex];
-      const statusId = this.getStatusId(status);
-      this.taskService.updateStatus(task.id, statusId).subscribe({
-        error: () => this.loadBoard(this.selectedProject.id)
-      });
-    }
-  }
-
-  openTaskDialog(task: any) {
-    const ref = this.dialog.open(TaskDialogComponent, {
-      width: '560px',
-      panelClass: 'premium-dialog',
-      data: { ...task, users: this.allUsers } 
-    });
-
-    ref.afterClosed().subscribe(updated => {
-      if (updated) this.loadBoard(this.selectedProject.id);
-    });
-  }
 
   // Uses task_assignees array generated by backend
   getAvatar(userId: string) {
     if (!Array.isArray(this.allUsers)) return '?'; 
     const u = this.allUsers.find(x => x.id === userId);
     if (!u) return '?';
-    const name = u.first_name || u.name || u.username || u.email || '?';
+    const name = u.first_name || u.last_name || u.username || u.email || '?';
     return name.substring(0, 2).toUpperCase();
   }
 
@@ -1584,7 +288,7 @@ loadUsers() {
   createTask() {
   this.taskService.createTask(this.task).subscribe(() => {
     this.toast.success('Issue created successfully!');
-    this.task = { title: '', project_id: '', priority_id: 2, assignees: [], due_date: null };
+    this.task = { title: '', project_id: '', priority_id: 2, task_assignees: [], due_date: '' };
     if (this.selectedProject) this.loadBoard(this.selectedProject.id);
     this.setView('board');
   });
@@ -1593,7 +297,7 @@ loadUsers() {
  createEmployee() {
   this.adminService.createEmployee(this.employee).subscribe(() => {
     this.toast.success('Invitation sent to ' + this.employee.email);
-    this.employee = { name: '', email: '', password: '' };
+    this.employee = { username: '', email: '', password: '' };
     this.loadUsers();
     this.setView('employees');
   });
@@ -1629,17 +333,615 @@ loadUsers() {
     });
   }
 
-  deleteTask(event: Event, id: string) {
-    event.stopPropagation(); // Prevents opening the edit dialog
+
+  // ================= DELETE TASK (Optimistic UI) =================
+  deleteTask(event: Event, taskId: string) {
+    event.stopPropagation();
+
+    // 1. Open the Premium FAANG-style dialog
     const ref = this.dialog.open(ConfirmDialogComponent, {
-      width: '400px', panelClass: 'premium-dialog',
-      data: { title: 'Delete Issue', message: 'Are you sure you want to delete this issue?' }
+      width: '400px', 
+      panelClass: 'premium-dialog',
+      data: { 
+        title: 'Delete Issue', 
+        message: 'Are you sure you want to delete this issue? This cannot be undone.' 
+      }
     });
 
+    // 2. Wait for user response
     ref.afterClosed().subscribe(confirm => {
       if (confirm) {
-        this.taskService.deleteTask(id).subscribe(() => this.loadBoard(this.selectedProject.id));
+        
+        // 3. Optimistic UI Update (Instantly remove from view)
+        this.board.TODO = this.board.TODO.filter(t => t.id !== taskId);
+        this.board.IN_PROGRESS = this.board.IN_PROGRESS.filter(t => t.id !== taskId);
+        this.board.DONE = this.board.DONE.filter(t => t.id !== taskId);
+        this.cdr.detectChanges(); // Force Angular to redraw the screen instantly
+
+        // 4. Fire Backend Call
+        this.taskService.deleteTask(taskId).pipe(takeUntil(this.destroy$)).subscribe({
+          error: (err) => {
+            console.error("Deletion failed", err);
+            // Replaced ugly alert() with your premium Toast notification
+            this.toast.error("Failed to delete task. Reverting..."); 
+            
+            // 5. Rollback on failure
+            this.loadBoard(this.selectedProjectId);
+          }
+        });
       }
     });
   }
-}
+
+  // --- ACTIVITY LOG HELPERS ---
+
+  // 1. Resolve User ID to Real Name
+  getUserName(userId: string): string {
+    // Make sure we check against allUsers (so we find them even if inactive)
+    const u = this.allUsers?.find(x => x.id === userId);
+    if (u) {
+      return `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.username || 'Unknown User';
+    }
+    return 'User ' + userId.substring(0, 8); // Fallback
+  }
+
+  // 2. Translate technical logs into human-readable sentences
+  formatLogMessage(log: any): string {
+    const action = log.action?.toUpperCase();
+    const entityType = log.entity_type?.toUpperCase();
+    const entityId = log.entity_id || '';
+
+    // If it's an API Middleware Log (What you currently have)
+    if (entityType === 'API') {
+      if (entityId.includes('/status')) return `updated a task's status`;
+      if (entityId.includes('/tasks') && action === 'POST') return `created a new task`;
+      if (entityId.includes('/tasks') && (action === 'PATCH' || action === 'PUT')) return `updated task details`;
+      if (entityId.includes('/tasks') && action === 'DELETE') return `deleted a task`;
+      
+      if (entityId.includes('/projects') && action === 'POST') return `created a new workspace`;
+      if (entityId.includes('/projects') && action === 'DELETE') return `deleted a workspace`;
+      
+      return `made an API ${action} request`; // Fallback
+    }
+
+    // If you start using Domain Service Logs (e.g. TASK, PROJECT)
+    if (entityType === 'TASK') {
+      if (action === 'STATUS_UPDATED') return `changed the status of task`;
+      if (action === 'TASK_CREATED') return `created a new task`;
+      if (action === 'DETAILS_UPDATED') return `updated task details`;
+    }
+
+    return `${log.action} on ${log.entity_type}`;
+  }
+
+  // 3. Choose a colored icon based on the action
+  getLogIcon(log: any): string {
+    const action = log.action?.toUpperCase();
+    if (action?.includes('POST') || action?.includes('CREATED')) return 'add_circle';
+    if (action?.includes('PATCH') || action?.includes('PUT') || action?.includes('UPDATED')) return 'edit';
+    if (action?.includes('DELETE')) return 'delete';
+    return 'info';
+  }
+
+  // 4. Color code the icons
+  getLogColor(log: any): string {
+    const action = log.action?.toUpperCase();
+    if (action?.includes('POST') || action?.includes('CREATED')) return '#34d399'; // Emerald Green
+    if (action?.includes('PATCH') || action?.includes('PUT') || action?.includes('UPDATED')) return '#fbbf24'; // Amber
+    if (action?.includes('DELETE')) return '#f87171'; // Red
+    return '#818cf8'; // Indigo
+  }
+
+  // --- DIFF/EXPAND HELPERS ---
+
+  toggleLogDetails(log: any) {
+    // Toggles the accordion open/closed
+    log.expanded = !log.expanded;
+  }
+
+  getLogChanges(log: any): { key: string, oldVal: any, newVal: any }[] {
+    const changes: any[] =[];
+    
+    const oldVal = typeof log.old_value === 'string' ? JSON.parse(log.old_value) : (log.old_value || {});
+    const newVal = typeof log.new_value === 'string' ? JSON.parse(log.new_value) : (log.new_value || {});
+    
+    const allKeys = Array.from(new Set([...Object.keys(oldVal), ...Object.keys(newVal)]));
+    
+    // 🛑 ADD THIS: List of internal database or API keys to hide from the user
+    const ignoredKeys =[
+      'id', 'updated_at', 'created_at', 'deleted_at', 
+      'statusCode', 'StatusCode', 'method', 'url', 'ip', 'project_id'
+    ];
+    
+    for (const key of allKeys) {
+      if (ignoredKeys.includes(key)) continue;
+
+      const oldStr = JSON.stringify(oldVal[key]);
+      const newStr = JSON.stringify(newVal[key]);
+
+      if (oldStr !== newStr) {
+        changes.push({
+          key: this.formatKeyName(key),
+          oldVal: this.formatValue(key, oldVal[key]),
+          newVal: this.formatValue(key, newVal[key])
+        });
+      }
+    }
+    return changes;
+  }
+
+ formatKeyName(key: string): string {
+    return key
+      .replace(/([A-Z])/g, ' $1') // Split camelCase (e.g. statusCode -> status Code)
+      .replace(/_id$/, '')        // Remove '_id' (e.g. priority_id -> priority)
+      .replace(/_/g, ' ')         // Replace underscores with spaces
+      .trim()
+      .replace(/^./, str => str.toUpperCase()); // Capitalize the very first letter
+  }
+  // Translates raw DB values into human-readable text (like translating status 1 to 'To Do')
+  formatValue(key: string, value: any): string {
+    if (value === null || value === undefined || value === '') return 'None';
+    
+    if (key.includes('status')) {
+      if (String(value) === '1') return 'To Do';
+      if (String(value) === '2') return 'In Progress';
+      if (String(value) === '3') return 'Done';
+    }
+    
+    if (key.includes('priority')) {
+      if (String(value) === '1') return 'Low';
+      if (String(value) === '2') return 'Medium';
+      if (String(value) === '3') return 'High';
+    }
+
+    return String(value);
+  }
+
+  logout() {
+    this.authService.logout().subscribe(() => this.router.navigate(['/']));
+  }
+											  
+}												   
+																							 			 
+
+
+
+
+
+// import { Component, OnInit, ChangeDetectorRef  } from '@angular/core';
+// import { CommonModule } from '@angular/common';
+// import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+// import { CdkDragDrop, moveItemInArray, transferArrayItem, DragDropModule } from '@angular/cdk/drag-drop';
+// import { MaterialModule } from '../shared/material.module';
+// import { CalendarComponent } from '../features/calendar/calendar.component';
+// import { TaskService } from '../services/task.service';
+// import { ProjectService } from '../services/project.service';
+// import { AdminUserService } from '../services/admin-user.service';
+// import { AuthService } from '../services/auth.service';
+// import { MatDialog } from '@angular/material/dialog';
+// import { TaskDialogComponent } from '../features/tasks/task-dialog';
+// import { Router } from '@angular/router';
+// import { ConfirmDialogComponent } from '../shared/confirm-dialog/confirm-dialog.component';
+// import { ToastService } from '../shared/ui/toast.service';
+// import { CommentsDialogComponent } from '../features/tasks/comments-dialog.component';
+
+// @Component({
+//   selector: 'app-admin',
+//   standalone: true,
+//   imports: [
+//     CommonModule, FormsModule, ReactiveFormsModule, MaterialModule,
+//     CalendarComponent, DragDropModule
+//   ],
+//   templateUrl: './admin.html',
+//   styleUrls: ['./admin.css']
+// })
+// export class Admin implements OnInit {
+//   view: string = 'dashboard';
+//   projects: any[] = [];
+//   users: any[] = [];
+//    allUsers: any[] =[];
+//    globalAuditLogs: any[] =[];
+
+//   selectedProject: any = null;
+//   selectedProjectId: string = '';
+//   isLoadingProjects: boolean = true;
+//   isLoadingBoard: boolean = false;
+
+//   board: any = { TODO: [], IN_PROGRESS: [], DONE: [] };
+
+//    task: any = { 
+//     title: '', description: '', project_id: '', priority_id: 2, 
+//     story_points: null, start_date: null, due_date: null, assignees: [] 
+//   };
+//   employee: any = { 
+//     first_name: '', last_name: '', username: '', 
+//     email: '', password: '', role: 'EMPLOYEE' 
+//   };
+
+//   // API Aligned Project Model
+//   newProject: any = { 
+//     name: '', description: '', start_date: null, end_date: null 
+//   };
+
+//   constructor(
+//     private taskService: TaskService,
+//     private projectService: ProjectService,
+//     private adminService: AdminUserService,
+//     private authService: AuthService,
+//     private dialog: MatDialog,
+//     private router: Router,
+//     private toast: ToastService,
+//     private cdr: ChangeDetectorRef
+//   ) {}
+
+//   ngOnInit() {
+//     this.loadProjects();
+//     this.loadUsers();
+//      this.loadAllUsers(); 
+//   }
+
+//   get activeUsers() { return this.users.filter(u => u.status === 'ACTIVE').length; }
+//   get inactiveUsers() { return this.users.filter(u => u.status !== 'ACTIVE').length; }
+//   get totalProjects() { return this.projects.length; }
+
+//   get todoCount() { return this.board.TODO?.length || 0; }
+//   get inProgressCount() { return this.board.IN_PROGRESS?.length || 0; }
+//   get doneCount() { return this.board.DONE?.length || 0; }
+//   get totalBoardTasks() { return this.todoCount + this.inProgressCount + this.doneCount; }
+
+//   // ================= OPEN COMMENTS =================
+//   openCommentsDialog(event: Event, task: any) {
+//     event.stopPropagation(); // Stop task edit dialog from opening
+//     this.dialog.open(CommentsDialogComponent, {
+//       width: '500px',
+//       panelClass: 'premium-dialog',
+//       data: { task: task, users: this.allUsers }
+//     });
+//   }
+
+//   logout() {
+//     this.authService.logout().subscribe(() => this.router.navigate(['/']));
+//   }
+
+//   // setView(v: string) { this.view = v; }
+
+//   setView(v: string) { 
+//     this.view = v; 
+//     if (v === 'activity') {
+//       this.loadGlobalActivity();
+//     }
+//   }
+
+//    loadGlobalActivity() {
+//     this.adminService.getGlobalActivity().subscribe({
+//       next: (res: any) => {
+//         // Safely extract the data depending on your backend response structure
+//         this.globalAuditLogs = res.data?.data || res.data || res ||[];
+//         this.cdr.detectChanges(); // Force UI update
+//       },
+//       error: (err) => {
+//         console.error('Failed to load global activity', err);
+//         this.toast.error('Failed to load activity logs');
+//       }
+//     });
+//   }
+
+//   // projectService.getProjects() handles pagination mapping {data, meta}
+//   loadProjects() {
+//     this.isLoadingProjects = true;
+//     this.projectService.getProjects().subscribe(r => {
+//       this.projects = r;
+//       this.isLoadingProjects = false; // Turn off skeleton
+//       this.cdr.detectChanges();
+//     });
+//   }
+
+//     loadAllUsers() {
+//     this.adminService.getAllUsers().subscribe((r: any) => {
+//       // Backend returns { status: "success", data: { data: [...], total: X } } or similar based on pagination
+//       const dataArray = r.data?.data || r.data || r; 
+      
+//       this.allUsers = Array.isArray(dataArray) 
+//         ? dataArray.filter((u: any) => !u.email?.includes('_deleted_'))
+//         :[];
+//     });
+//   }
+// loadUsers() {
+//     this.adminService.getEmployees().subscribe((r: any) => {
+//       const dataArray = r.data || r;
+//       this.users = Array.isArray(dataArray) 
+//         ? dataArray.filter((u: any) => !u.email?.includes('_deleted_'))
+//         :[];
+//     });
+//   }
+ 
+
+//   // loadUsers() {
+//   //    this.adminService.getEmployees().subscribe(r => {
+//   //     // Filter out users that have been soft-deleted
+//   //     this.users = r.filter((u: any) => !u.email.includes('_deleted_'));
+//   //   });
+//   // }
+
+//   changeProject() {
+//     if (!this.selectedProjectId) return;
+//     const project = this.projects.find(p => p.id === this.selectedProjectId);
+//     if (project) this.openProject(project);
+//   }
+
+//   openProject(p: any) {
+//     this.selectedProject = p;
+//     this.selectedProjectId = p.id;
+//     this.view = 'board';
+//     this.loadBoard(p.id);
+//   }
+
+//    loadBoard(id: string) {
+//     this.isLoadingBoard = true;
+//     this.taskService.getBoard(id).subscribe((r: any) => {
+//       this.board = { TODO: r.TODO || [], IN_PROGRESS: r.IN_PROGRESS || [], DONE: r.DONE || [] };
+//       this.isLoadingBoard = false; // Turn off skeleton
+//        this.cdr.detectChanges(); 
+//     });
+//   }
+
+//   getStatusId(s: string) {
+//     if (s === 'TODO') return 1;
+//     if (s === 'IN_PROGRESS') return 2;
+//     if (s === 'DONE') return 3;
+//     return 1;
+//   }
+
+//   drop(event: CdkDragDrop<any[]>, status: string) {
+//     if (event.previousContainer === event.container) {
+//       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+//     } else {
+//       transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
+//       const task = event.container.data[event.currentIndex];
+//       const statusId = this.getStatusId(status);
+//       this.taskService.updateStatus(task.id, statusId).subscribe({
+//         error: () => this.loadBoard(this.selectedProject.id)
+//       });
+//     }
+//   }
+
+//   // --- FETCH & OPEN TASK FROM ACTIVITY LOG ---
+//   fetchAndOpenTask(event: Event, taskId: string) {
+//     // 1. Stop the click event so it doesn't ALSO trigger the row's expand/collapse
+//     event.stopPropagation(); 
+
+//     // 2. Fetch the specific task using your TaskService
+//     this.taskService.getTaskById(taskId).subscribe({
+//       next: (res: any) => {
+//         // Depending on your backend, the task might be wrapped in a 'data' object
+//         const taskDetails = res.data || res; 
+        
+//         if (taskDetails) {
+//           this.openTaskDialog(taskDetails);
+//         } else {
+//           this.toast.error('Task not found.');
+//         }
+//       },
+//       error: (err: any) => {
+//         console.error('Error fetching task:', err);
+//         this.toast.error('Could not load task. It may have been deleted.');
+//       }
+//     });
+//   }
+
+//   openTaskDialog(task: any) {
+//     const ref = this.dialog.open(TaskDialogComponent, {
+//       width: '560px',
+//       panelClass: 'premium-dialog',
+//       data: { ...task, users: this.allUsers } 
+//     });
+
+//     ref.afterClosed().subscribe(updated => {
+//       if (updated) this.loadBoard(this.selectedProject.id);
+//     });
+//   }
+
+//   // Uses task_assignees array generated by backend
+//   getAvatar(userId: string) {
+//     if (!Array.isArray(this.allUsers)) return '?'; 
+//     const u = this.allUsers.find(x => x.id === userId);
+//     if (!u) return '?';
+//     const name = u.first_name || u.name || u.username || u.email || '?';
+//     return name.substring(0, 2).toUpperCase();
+//   }
+
+//   createProject() {
+//   this.projectService.createProject(this.newProject).subscribe(() => {
+//     this.toast.success('Workspace created successfully!');
+//     this.newProject = { name: '', description: '' };
+//     this.loadProjects();
+//     this.setView('dashboard');
+//   });
+// }
+
+//   createTask() {
+//   this.taskService.createTask(this.task).subscribe(() => {
+//     this.toast.success('Issue created successfully!');
+//     this.task = { title: '', project_id: '', priority_id: 2, assignees: [], due_date: null };
+//     if (this.selectedProject) this.loadBoard(this.selectedProject.id);
+//     this.setView('board');
+//   });
+// }
+
+//  createEmployee() {
+//   this.adminService.createEmployee(this.employee).subscribe(() => {
+//     this.toast.success('Invitation sent to ' + this.employee.email);
+//     this.employee = { name: '', email: '', password: '' };
+//     this.loadUsers();
+//     this.setView('employees');
+//   });
+// }
+
+//  deleteProject(event: Event, id: string) {
+//     event.stopPropagation();
+//     const ref = this.dialog.open(ConfirmDialogComponent, {
+//       width: '400px', panelClass: 'premium-dialog',
+//       data: { title: 'Delete Workspace', message: 'Are you sure you want to permanently delete this workspace and all its tasks? This cannot be undone.' }
+//     });
+
+//     ref.afterClosed().subscribe(confirm => {
+//       if (confirm) {
+//         this.projectService.deleteProject(id).subscribe(() => {
+//           if (this.selectedProjectId === id) { this.selectedProjectId = ''; this.selectedProject = null; this.view = 'dashboard'; }
+//           this.loadProjects();
+//         });
+//       }
+//     });
+//   }
+
+//   deleteEmployee(id: any) {
+//     const ref = this.dialog.open(ConfirmDialogComponent, {
+//       width: '400px', panelClass: 'premium-dialog',
+//       data: { title: 'Remove Teammate', message: 'Are you sure you want to remove this employee from the organization?' }
+//     });
+
+//     ref.afterClosed().subscribe(confirm => {
+//       if (confirm) {
+//         this.adminService.deleteEmployee(id).subscribe(() => this.loadUsers());
+//       }
+//     });
+//   }
+
+//   deleteTask(event: Event, id: string) {
+//     event.stopPropagation(); // Prevents opening the edit dialog
+//     const ref = this.dialog.open(ConfirmDialogComponent, {
+//       width: '400px', panelClass: 'premium-dialog',
+//       data: { title: 'Delete Issue', message: 'Are you sure you want to delete this issue?' }
+//     });
+
+//     ref.afterClosed().subscribe(confirm => {
+//       if (confirm) {
+//         this.taskService.deleteTask(id).subscribe(() => this.loadBoard(this.selectedProject.id));
+//       }
+//     });
+//   }
+
+//   // --- ACTIVITY LOG HELPERS ---
+
+//   // 1. Resolve User ID to Real Name
+//   getUserName(userId: string): string {
+//     // Make sure we check against allUsers (so we find them even if inactive)
+//     const u = this.allUsers?.find(x => x.id === userId);
+//     if (u) {
+//       return `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.username || 'Unknown User';
+//     }
+//     return 'User ' + userId.substring(0, 8); // Fallback
+//   }
+
+//   // 2. Translate technical logs into human-readable sentences
+//   formatLogMessage(log: any): string {
+//     const action = log.action?.toUpperCase();
+//     const entityType = log.entity_type?.toUpperCase();
+//     const entityId = log.entity_id || '';
+
+//     // If it's an API Middleware Log (What you currently have)
+//     if (entityType === 'API') {
+//       if (entityId.includes('/status')) return `updated a task's status`;
+//       if (entityId.includes('/tasks') && action === 'POST') return `created a new task`;
+//       if (entityId.includes('/tasks') && (action === 'PATCH' || action === 'PUT')) return `updated task details`;
+//       if (entityId.includes('/tasks') && action === 'DELETE') return `deleted a task`;
+      
+//       if (entityId.includes('/projects') && action === 'POST') return `created a new workspace`;
+//       if (entityId.includes('/projects') && action === 'DELETE') return `deleted a workspace`;
+      
+//       return `made an API ${action} request`; // Fallback
+//     }
+
+//     // If you start using Domain Service Logs (e.g. TASK, PROJECT)
+//     if (entityType === 'TASK') {
+//       if (action === 'STATUS_UPDATED') return `changed the status of task`;
+//       if (action === 'TASK_CREATED') return `created a new task`;
+//       if (action === 'DETAILS_UPDATED') return `updated task details`;
+//     }
+
+//     return `${log.action} on ${log.entity_type}`;
+//   }
+
+//   // 3. Choose a colored icon based on the action
+//   getLogIcon(log: any): string {
+//     const action = log.action?.toUpperCase();
+//     if (action?.includes('POST') || action?.includes('CREATED')) return 'add_circle';
+//     if (action?.includes('PATCH') || action?.includes('PUT') || action?.includes('UPDATED')) return 'edit';
+//     if (action?.includes('DELETE')) return 'delete';
+//     return 'info';
+//   }
+
+//   // 4. Color code the icons
+//   getLogColor(log: any): string {
+//     const action = log.action?.toUpperCase();
+//     if (action?.includes('POST') || action?.includes('CREATED')) return '#34d399'; // Emerald Green
+//     if (action?.includes('PATCH') || action?.includes('PUT') || action?.includes('UPDATED')) return '#fbbf24'; // Amber
+//     if (action?.includes('DELETE')) return '#f87171'; // Red
+//     return '#818cf8'; // Indigo
+//   }
+
+//   // --- DIFF/EXPAND HELPERS ---
+
+//   toggleLogDetails(log: any) {
+//     // Toggles the accordion open/closed
+//     log.expanded = !log.expanded;
+//   }
+
+//   getLogChanges(log: any): { key: string, oldVal: any, newVal: any }[] {
+//     const changes: any[] =[];
+    
+//     const oldVal = typeof log.old_value === 'string' ? JSON.parse(log.old_value) : (log.old_value || {});
+//     const newVal = typeof log.new_value === 'string' ? JSON.parse(log.new_value) : (log.new_value || {});
+    
+//     const allKeys = Array.from(new Set([...Object.keys(oldVal), ...Object.keys(newVal)]));
+    
+//     // 🛑 ADD THIS: List of internal database or API keys to hide from the user
+//     const ignoredKeys =[
+//       'id', 'updated_at', 'created_at', 'deleted_at', 
+//       'statusCode', 'StatusCode', 'method', 'url', 'ip', 'project_id'
+//     ];
+    
+//     for (const key of allKeys) {
+//       if (ignoredKeys.includes(key)) continue;
+
+//       const oldStr = JSON.stringify(oldVal[key]);
+//       const newStr = JSON.stringify(newVal[key]);
+
+//       if (oldStr !== newStr) {
+//         changes.push({
+//           key: this.formatKeyName(key),
+//           oldVal: this.formatValue(key, oldVal[key]),
+//           newVal: this.formatValue(key, newVal[key])
+//         });
+//       }
+//     }
+//     return changes;
+//   }
+
+//  formatKeyName(key: string): string {
+//     return key
+//       .replace(/([A-Z])/g, ' $1') // Split camelCase (e.g. statusCode -> status Code)
+//       .replace(/_id$/, '')        // Remove '_id' (e.g. priority_id -> priority)
+//       .replace(/_/g, ' ')         // Replace underscores with spaces
+//       .trim()
+//       .replace(/^./, str => str.toUpperCase()); // Capitalize the very first letter
+//   }
+//   // Translates raw DB values into human-readable text (like translating status 1 to 'To Do')
+//   formatValue(key: string, value: any): string {
+//     if (value === null || value === undefined || value === '') return 'None';
+    
+//     if (key.includes('status')) {
+//       if (String(value) === '1') return 'To Do';
+//       if (String(value) === '2') return 'In Progress';
+//       if (String(value) === '3') return 'Done';
+//     }
+    
+//     if (key.includes('priority')) {
+//       if (String(value) === '1') return 'Low';
+//       if (String(value) === '2') return 'Medium';
+//       if (String(value) === '3') return 'High';
+//     }
+
+//     return String(value);
+//   }
+// }

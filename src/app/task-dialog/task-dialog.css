@@ -102,3 +102,19 @@ gap: 10px;
 margin-top: 10px;
 
 }
+
+/* 1. Tell the browser to use its native dark mode for date inputs */
+input[type="date"] {
+  color-scheme: dark; 
+}
+
+/* 2. Target the specific calendar icon (for Chrome/Edge/Safari) to ensure it is bright and visible */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1); /* Turns the black icon white */
+  opacity: 0.7;      /* Makes it slightly soft to match your theme */
+  cursor: pointer;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;        /* Brightens up when hovered */
+}

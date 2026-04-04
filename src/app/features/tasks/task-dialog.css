@@ -57,7 +57,8 @@
 .split-layout {
   display: flex;
   height: 100%;
-  min-height: 500px;
+  /* min-height: 500px; */
+  overflow: hidden; 
 }
 
 .dialog-main {
@@ -65,6 +66,8 @@
   display: flex;
   flex-direction: column;
   border-right: 1px solid rgba(255,255,255,0.08);
+    overflow: hidden; /* ADDED: Prevents this column from stretching past the screen */
+  min-height: 0; 
 }
 
 .dialog-sidebar {
@@ -80,6 +83,8 @@
   padding: 24px;
   overflow-y: auto;
   overflow-x: hidden;
+   flex: 1;       /* ADDED: Tells content to take up remaining space */
+  min-height: 0;
 }
 
 /* Scrollbar */
@@ -296,4 +301,52 @@
     min-width: 100%;
     border-top: 1px solid rgba(255,255,255,0.08);
   }
+}/* ================= TASK DIALOG CUTOFF FIX (task-dialog.css) ================= */
+
+/* 1. Force the dialog container to not exceed screen height */
+::ng-deep .premium-dialog .mat-mdc-dialog-surface {
+  max-height: 90vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important; 
+  padding: 0 !important; /* Remove default padding causing overflow */
+}
+
+/* 2. Wrapper takes exactly 100% of the surface height */
+.dialog-wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 3. The main split area should flex and hide overflow */
+.split-layout {
+  flex: 1 1 auto;
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* 4. Make ONLY the content section scrollable */
+.dialog-content {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+/* 5. Pin actions to the bottom permanently */
+.dialog-actions {
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+  background-color: #0f1423;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  margin-top: auto; /* Push to bottom */
+}
+/* Add this right below your .form-group input block */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.8;
+  cursor: pointer;
 }

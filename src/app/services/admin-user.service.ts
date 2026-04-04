@@ -42,6 +42,10 @@ export class AdminUserService {
   return this.api.delete<void>(`${this.basePath}/${id}`);
 }
 
+ getGlobalActivity() {
+    return this.api.get(`${this.basePath}/audit`); // Ensure this matches your backend route
+  }
+
 }
 
 

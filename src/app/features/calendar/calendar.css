@@ -6,15 +6,20 @@
   animation: fadeIn 0.4s ease;
 }
 
+/* ================= 1. MONTH TOOLBAR (Top Header Box) ================= */
 .cal-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px 32px;
-  background: linear-gradient(to right, #121827, #0b1121);
-  border-radius: 16px 16px 0 0;
-  border: 1px solid rgba(99, 102, 241, 0.2);
-  border-bottom: none;
+  padding: 16px 24px;
+  background: var(--bg-surface);
+  
+  /* 👇 FIX: Adds the Shiny Violet border to the Top, Left, and Right */
+  border: 2px solid rgba(133, 30, 230, 0.785);
+  border-bottom: none; /* The week-names row below will provide the bottom border */
+  
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0; /* Rounds the top corners */
+  box-shadow: 0 10px 30px rgba(133, 30, 230, 0.15) inset; /* Soft inner glow */
 }
 .cal-toolbar h3 { 
   margin: 0; color: #ffffff; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; 
@@ -188,3 +193,218 @@
 ::ng-deep .cal-month-view .cal-day-cell::-webkit-scrollbar-track { background: transparent; }
 ::ng-deep .cal-month-view .cal-day-cell::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
 ::ng-deep .cal-month-view .cal-day-cell::-webkit-scrollbar-thumb:hover { background: rgba(99, 102, 241, 0.5); }
+
+/* ================= TOOLBAR FIXES ================= */
+.cal-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.month-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+}
+
+.nav-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 120px; /* Balances the spacer on the right */
+}
+
+.icon-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+  border-color: var(--border-subtle);
+}
+
+.today-btn {
+  background: rgba(99, 102, 241, 0.1);
+  color: #818cf8;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.today-btn:hover {
+  background: rgba(99, 102, 241, 0.2);
+  transform: translateY(-1px);
+}
+
+/* ================= CUSTOM CELL TEMPLATE STYLES ================= */
+.cal-cell-top {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 8px 4px 8px;
+}
+
+.cal-day-number {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-main);
+  opacity: 0.8;
+}
+
+/* Container for the bars */
+.cal-events-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px; /* Space between bars */
+  padding: 0 6px 8px 6px;
+}
+
+/* The Sleek Short Bar */
+.cal-short-bar {
+  border-radius: 4px;
+  padding: 2px 6px;
+  cursor: pointer;
+  height: 20px; /* Forces a thin bar */
+  display: flex;
+  align-items: center;
+  transition: transform 0.2s, opacity 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.cal-short-bar:hover {
+  transform: translateY(-1px);
+  opacity: 0.9;
+}
+
+/* Text inside the bar */
+.bar-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #ffffff; /* White text stands out on colored bars */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* Adds '...' if title is too long */
+  width: 100%;
+}
+
+/* The "+X more" Badge */
+.cal-overflow-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: #818cf8; /* Light Indigo */
+  background: rgba(99, 102, 241, 0.1);
+  border-radius: 4px;
+  padding: 2px 6px;
+  text-align: center;
+  cursor: pointer;
+  margin-top: 2px;
+}
+
+.cal-overflow-badge:hover {
+  background: rgba(99, 102, 241, 0.2);
+}
+
+/* ================= SHINY VIOLET CALENDAR BORDERS ================= */
+
+/* 1. Outer Calendar Wrapper Border */
+::ng-deep .cal-month-view {
+  border: 2px solid rgba(133, 30, 230, 0.785) !important; 
+  border-top: none !important; /* Top border comes from the toolbar */
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg); /* Fixed invalid 2 2 syntax */
+  overflow: hidden;
+  background-color: var(--bg-surface);
+  box-shadow: 0 10px 30px rgba(133, 30, 230, 0.3); /* Outer Violet Glow */
+}
+
+/* ================= 2. WEEK NAMES (Header Top & Bottom 2px) ================= */
+::ng-deep .cal-month-view .cal-header {
+  /* Top border separates the Week Names from the Toolbar */
+  border-top: 2px solid rgba(133, 30, 230, 0.785) !important; 
+  background: rgba(0, 0, 0, 0.3); 
+}
+
+::ng-deep .cal-month-view .cal-header .cal-cell {
+  font-weight: 600;
+  color: var(--text-muted);
+  /* 2px border between the days */
+  border-right: 2px solid rgba(133, 30, 230, 0.785) !important; 
+  
+  /* 👇 FIX: Force the 2px Bottom border directly on the cells so it cannot be hidden */
+  border-bottom: 2px solid rgba(133, 30, 230, 0.785) !important; 
+  
+  padding: 12px 0;
+}
+
+::ng-deep .cal-month-view .cal-header .cal-cell:last-child {
+  border-right: none !important;
+}
+/* 3. HORIZONTAL LINES (Between Weeks inside the grid) */
+::ng-deep .cal-month-view .cal-cell-row {
+  border-bottom: 1px solid rgba(133, 30, 230, 0.785) !important; 
+}
+
+/* Remove double border on the very bottom row */
+::ng-deep .cal-month-view .cal-days .cal-cell-row:last-child {
+  border-bottom: none !important;
+}
+
+/* 4. VERTICAL LINES (Between Days inside the grid) */
+::ng-deep .cal-month-view .cal-day-cell {
+  background-color: var(--bg-surface);
+  border-right: 1px solid rgba(133, 30, 230, 0.785) !important; 
+  min-height: 120px;
+}
+
+/* Remove double border on the far right column */
+::ng-deep .cal-month-view .cal-day-cell:last-child {
+  border-right: none !important;
+}
+
+/* 5. Premium Touches (Hover & Today) */
+::ng-deep .cal-month-view .cal-cell-row:hover {
+  background-color: transparent !important;
+}
+::ng-deep .cal-month-view .cal-day-cell:hover {
+  background-color: rgba(168, 85, 247, 0.05) !important; 
+}
+::ng-deep .cal-month-view .cal-today {
+  background-color: rgba(168, 85, 247, 0.08) !important; 
+}
+::ng-deep .cal-month-view .cal-out-month {
+  background-color: rgba(0, 0, 0, 0.2) !important; 
+}
+/* ================= PRIORITY DOT INSIDE BARS ================= */
+.priority-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 6px;
+  flex-shrink: 0; /* Ensures the dot doesn't get squashed if the title is long */
+  box-shadow: 0 0 3px rgba(0,0,0,0.4); /* Gives it a slight pop against colored backgrounds */
+}
+
+/* Bright pastel colors so they are visible on both dark and light bars */
+.dot-p-1 { background-color: #d1d5db; } /* Low: Light Gray */
+.dot-p-2 { background-color: #fde047; } /* Medium: Bright Yellow */
+.dot-p-3 { background-color: #f50202; } /* High: Bright Red/Pink */
