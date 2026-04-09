@@ -19,48 +19,55 @@
         <p class="subtitle">Enter your credentials to access your workspace.</p>
       </div>
 
-      <form (ngSubmit)="login()">
+      <!-- Attached the Reactive FormGroup -->
+      <form [formGroup]="loginForm" (ngSubmit)="login()">
         
         <!-- EMAIL -->
         <div class="form-group">
           <label>Email Address</label>
-          <div class="input-wrapper" [class.disabled]="isLoading">
+          <div class="input-wrapper" 
+               [class.disabled]="isLoading"
+               [class.invalid-wrapper]="(loginForm.get('email')?.invalid && (loginForm.get('email')?.touched || loginForm.get('email')?.dirty)) || errorMessage !== ''">
             <mat-icon class="input-icon">mail</mat-icon>
             <input 
               type="email" 
-              [(ngModel)]="email" 
-              name="email" 
+              formControlName="email" 
               placeholder="name@company.com" 
-              required 
-              [disabled]="isLoading"
+              [readOnly]="isLoading"
             />
           </div>
+          <small class="error-text animate-fade-in" *ngIf="loginForm.get('email')?.errors?.['required'] && (loginForm.get('email')?.touched || loginForm.get('email')?.dirty)">
+            Email is required
+          </small>
         </div>
 
         <!-- PASSWORD -->
-        <div class="form-group">
+        <div class="form-group" style="margin-top: 16px;">
           <label>Password</label>
-          <div class="input-wrapper" [class.disabled]="isLoading">
+          <div class="input-wrapper" 
+               [class.disabled]="isLoading"
+               [class.invalid-wrapper]="(loginForm.get('password')?.invalid && (loginForm.get('password')?.touched || loginForm.get('password')?.dirty)) || errorMessage !== ''">
             <mat-icon class="input-icon">lock</mat-icon>
             <input 
               type="password" 
-              [(ngModel)]="password" 
-              name="password" 
+              formControlName="password" 
               placeholder="••••••••" 
-              required 
-              [disabled]="isLoading"
+              [readOnly]="isLoading"
             />
           </div>
+          <small class="error-text animate-fade-in" *ngIf="loginForm.get('password')?.errors?.['minlength'] && (loginForm.get('password')?.touched || loginForm.get('password')?.dirty)">
+            Password must be at least 8 characters
+          </small>
         </div>
 
-        <!-- ERROR BANNER -->
-        <div class="error-banner animate-fade-in" *ngIf="errorMessage">
+        <!-- BACKEND ERROR BANNER (Shows invalid credentials) -->
+        <div class="error-banner animate-fade-in" *ngIf="errorMessage" style="margin-top: 24px;">
           <mat-icon>error_outline</mat-icon>
           <span>{{ errorMessage }}</span>
         </div>
 
         <!-- SUBMIT BUTTON -->
-        <button type="submit" class="primary-btn" [disabled]="isLoading">
+        <button type="submit" class="primary-btn" [disabled]="isLoading" style="margin-top: 24px;">
           <span *ngIf="!isLoading">Sign In</span>
           <span *ngIf="isLoading" class="loading-state">
             <mat-icon class="spinner">autorenew</mat-icon> Signing in...
@@ -77,3 +84,83 @@
 
   </div>
 </div>
+
+
+
+
+<!-- <div class="premium-login-layout">
+
+ 
+  <div class="ambient-glow glow-indigo"></div>
+  <div class="ambient-glow glow-purple"></div>
+
+  <div class="login-wrapper animate-fade-up">
+    
+    <div class="brand-header" (click)="goToHome()">
+      <div class="brand-icon"><mat-icon>layers</mat-icon></div>
+      <span class="brand-name">TaskFlow</span>
+    </div>
+
+   
+    <div class="premium-form-card">
+      <div class="card-header">
+        <h2>Welcome back</h2>
+        <p class="subtitle">Enter your credentials to access your workspace.</p>
+      </div>
+
+      <form (ngSubmit)="login()">
+        
+        
+        <div class="form-group">
+          <label>Email Address</label>
+          <div class="input-wrapper" [class.disabled]="isLoading">
+            <mat-icon class="input-icon">mail</mat-icon>
+            <input 
+              type="email" 
+              [(ngModel)]="email" 
+              name="email" 
+              placeholder="name@company.com" 
+              required 
+              [disabled]="isLoading"
+            />
+          </div>
+        </div>
+
+      
+        <div class="form-group">
+          <label>Password</label>
+          <div class="input-wrapper" [class.disabled]="isLoading">
+            <mat-icon class="input-icon">lock</mat-icon>
+            <input 
+              type="password" 
+              [(ngModel)]="password" 
+              name="password" 
+              placeholder="••••••••" 
+              required 
+              [disabled]="isLoading"
+            />
+          </div>
+        </div>
+
+        <div class="error-banner animate-fade-in" *ngIf="errorMessage">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ errorMessage }}</span>
+        </div>
+
+    
+        <button type="submit" class="primary-btn" [disabled]="isLoading">
+          <span *ngIf="!isLoading">Sign In</span>
+          <span *ngIf="isLoading" class="loading-state">
+            <mat-icon class="spinner">autorenew</mat-icon> Signing in...
+          </span>
+        </button>
+
+      </form>
+    </div>
+
+    <button class="back-link" (click)="goToHome()">
+      <mat-icon>arrow_back</mat-icon> Back to Home
+    </button>
+
+  </div>
+</div> -->

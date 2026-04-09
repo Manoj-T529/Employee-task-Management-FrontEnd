@@ -1,7 +1,9 @@
 <div class="premium-layout">
 
+  <div class="sidebar-overlay" [class.sidebar-open]="isMobileMenuOpen" (click)="closeMobileMenu()"></div>
+
   <!-- ================= SIDEBAR ================= -->
-  <aside class="sidebar">
+  <aside class="sidebar"  [class.sidebar-open]="isMobileMenuOpen">
     <div class="brand">
       <div class="brand-icon"><mat-icon>layers</mat-icon></div>
       <span class="brand-name">TaskFlow</span>
@@ -11,7 +13,8 @@
       <span class="nav-label">My Workspace</span>
       <nav class="nav-menu">
         <button [class.active]="view === 'dashboard'" (click)="setView('dashboard')"><mat-icon>home</mat-icon> Home</button>
-        <button [class.active]="view === 'board'" (click)="setView('board')" [disabled]="!selectedProjectId"><mat-icon>view_kanban</mat-icon> Board</button>
+        <!-- Disabled checks against the FormControl's value now -->
+        <button [class.active]="view === 'board'" (click)="setView('board')" [disabled]="!projectControl.value"><mat-icon>view_kanban</mat-icon> Board</button>
         <button [class.active]="view === 'calendar'" (click)="setView('calendar')"><mat-icon>calendar_today</mat-icon> Calendar</button>
       </nav>
     </div>
@@ -36,25 +39,30 @@
     <!-- ================= HEADER ================= -->
     <header class="glass-header">
       <div class="header-left">
+        <button class="mobile-menu-toggle" (click)="toggleMobileMenu()">
+          <mat-icon>menu</mat-icon>
+        </button>
         <div class="breadcrumb" *ngIf="view === 'board' || view === 'dashboard'">
           <mat-icon>folder</mat-icon>
-          <mat-select class="invisible-select" [(ngModel)]="selectedProjectId" (selectionChange)="changeProject()">
+          <!-- Using [formControl] natively without needing (selectionChange) -->
+          <mat-select class="invisible-select" [formControl]="projectControl">
             <mat-option *ngFor="let p of projects" [value]="p.id">{{p.name}}</mat-option>
           </mat-select>
         </div>
         <h1 class="page-title" *ngIf="view === 'calendar'">Calendar</h1>
       </div>
 
-      <!-- BOARD FILTERS (Fixed Search Binding) -->
+      <!-- BOARD FILTERS -->
       <div class="header-right" *ngIf="view === 'board'" style="display: flex; gap: 16px; align-items: center;">
         <div class="search-bar" style="position: relative;">
           <mat-icon style="position: absolute; left: 10px; top: 10px; color: #6b7280; font-size: 18px;">search</mat-icon>
-          <!-- Added (ngModelChange) to force UI updates on every keystroke -->
-          <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onFilterChange()" placeholder="Search tasks..." 
+          <!-- Search is now cleanly bound to the FormControl -->
+          <input type="text" [formControl]="searchControl" placeholder="Search tasks..." 
                  style="background: #1f2937; border: 1px solid #374151; color: white; border-radius: 8px; padding: 8px 12px 8px 36px; width: 200px; outline: none;">
         </div>
         <label style="display: flex; align-items: center; gap: 8px; color: #d1d5db; font-size: 14px; cursor: pointer;">
-          <input type="checkbox" [(ngModel)]="onlyMyTasks" (ngModelChange)="onFilterChange()" style="accent-color: #6366f1; width: 16px; height: 16px; cursor: pointer;">
+          <!-- Checkbox bound to the FormControl -->
+          <input type="checkbox" [formControl]="myTasksControl" style="accent-color: #6366f1; width: 16px; height: 16px; cursor: pointer;">
           Only My Tasks
         </label>
       </div>
@@ -68,7 +76,6 @@
           <p class="subtitle">Here is a summary of your work in this project.</p>
         </div>
 
-        <!-- QUICK STATS -->
         <div class="stats-grid" style="margin-bottom: 40px;">
           <div class="stat-box">
             <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: #fbbf24;"><mat-icon>assignment_late</mat-icon></div>
@@ -80,7 +87,6 @@
           </div>
         </div>
 
-        <!-- MY PENDING TASKS LIST -->
         <div class="premium-card" style="max-width: 800px; padding: 24px;">
           <h3 style="margin-top: 0; margin-bottom: 16px; color: #f3f4f6; display: flex; align-items: center; gap: 8px;">
             <mat-icon style="color: #818cf8;">list_alt</mat-icon> My Active Tasks
@@ -112,7 +118,6 @@
         <div class="kanban-columns">
 
           <!-- TO DO -->
-         <!-- TO DO -->
           <div class="kanban-col">
             <div class="col-header"><div class="col-title"><span class="dot todo"></span> To Do <span class="count">{{ todoTasks.length }}</span></div></div>
             <div class="col-body" cdkDropList id="todoList" [cdkDropListData]="todoTasks" [cdkDropListConnectedTo]="['progressList','doneList']" (cdkDropListDropped)="drop($event, 1)">
@@ -126,11 +131,11 @@
                 <h4 class="issue-title">{{ task.title }}</h4>
                 <div class="issue-footer">
                   
-                  <!-- STRICT TYPING DROPDOWN BINDING -->
-                  <select class="status-select" [(ngModel)]="task.status_id" (ngModelChange)="changeStatus(task, $event)">
-                    <option [ngValue]="1">To Do</option>
-                    <option [ngValue]="2">In Progress</option>
-                    <option [ngValue]="3">Done</option>
+                  <!-- FAANG Native DOM Select (Removed ngModel) -->
+                  <select class="status-select" [value]="task.status_id" (change)="onStatusSelectChange(task, $event)">
+                    <option value="1">To Do</option>
+                    <option value="2">In Progress</option>
+                    <option value="3">Done</option>
                   </select>
 
                   <div class="story-points" *ngIf="task.story_points" title="Story Points">
@@ -160,11 +165,11 @@
                 <h4 class="issue-title">{{ task.title }}</h4>
                 <div class="issue-footer">
                   
-                  <!-- STRICT TYPING DROPDOWN BINDING -->
-                  <select class="status-select progress-select" [(ngModel)]="task.status_id" (ngModelChange)="changeStatus(task, $event)">
-                    <option [ngValue]="1">To Do</option>
-                    <option [ngValue]="2">In Progress</option>
-                    <option [ngValue]="3">Done</option>
+                  <!-- FAANG Native DOM Select -->
+                  <select class="status-select progress-select" [value]="task.status_id" (change)="onStatusSelectChange(task, $event)">
+                    <option value="1">To Do</option>
+                    <option value="2">In Progress</option>
+                    <option value="3">Done</option>
                   </select>
 
                   <div class="story-points" *ngIf="task.story_points" title="Story Points">
@@ -194,7 +199,240 @@
                 <h4 class="issue-title" style="text-decoration: line-through; color: var(--text-muted)">{{ task.title }}</h4>
                 <div class="issue-footer">
                   
-                  <!-- STRICT TYPING DROPDOWN BINDING -->
+                  <!-- FAANG Native DOM Select -->
+                  <select class="status-select done-select" [value]="task.status_id" (change)="onStatusSelectChange(task, $event)">
+                    <option value="1">To Do</option>
+                    <option value="2">In Progress</option>
+                    <option value="3">Done</option>
+                  </select>
+
+                  <div class="story-points" *ngIf="task.story_points" title="Story Points">
+                    <mat-icon>change_history</mat-icon> {{task.story_points}}
+                  </div>
+                  <div class="spacer"></div>
+                  <button class="icon-btn" (click)="openCommentsDialog(task)" title="Comments" style="padding: 4px; margin-right: 8px;">
+                    <mat-icon style="font-size: 16px; width: 16px; height: 16px; color: #a1a1aa;">forum</mat-icon>
+                  </button>
+                  <div class="avatar-sm" *ngFor="let a of task.task_assignees" [title]="a.user_id">{{getAvatar(a.user_id)}}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- ================= CALENDAR VIEW ================= -->
+      <div *ngIf="view === 'calendar'" class="animate-fade calendar-wrapper">
+        <app-calendar 
+           [projects]="projects" 
+           [users]="users" 
+           [canCreate]="false">
+        </app-calendar>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+
+
+<!-- 
+<div class="premium-layout">
+
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon"><mat-icon>layers</mat-icon></div>
+      <span class="brand-name">TaskFlow</span>
+    </div>
+
+    <div class="nav-section">
+      <span class="nav-label">My Workspace</span>
+      <nav class="nav-menu">
+        <button [class.active]="view === 'dashboard'" (click)="setView('dashboard')"><mat-icon>home</mat-icon> Home</button>
+        <button [class.active]="view === 'board'" (click)="setView('board')" [disabled]="!selectedProjectId"><mat-icon>view_kanban</mat-icon> Board</button>
+        <button [class.active]="view === 'calendar'" (click)="setView('calendar')"><mat-icon>calendar_today</mat-icon> Calendar</button>
+      </nav>
+    </div>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="sidebar-footer">
+      <div class="user-profile">
+        <div class="avatar-sm" style="background: linear-gradient(135deg, #10b981, #059669);">ME</div>
+        <div class="user-info">
+          <span class="user-name">{{ currentUser?.first_name || currentUser?.username || 'Employee' }}</span>
+          <span class="user-role">Team Member</span>
+        </div>
+      </div>
+      <button class="icon-btn logout-btn" (click)="logout()" title="Logout"><mat-icon>logout</mat-icon></button>
+    </div>
+  </aside>
+
+
+  <main class="main-content">
+
+
+    <header class="glass-header">
+      <div class="header-left">
+        <div class="breadcrumb" *ngIf="view === 'board' || view === 'dashboard'">
+          <mat-icon>folder</mat-icon>
+          <mat-select class="invisible-select" [(ngModel)]="selectedProjectId" (selectionChange)="changeProject()">
+            <mat-option *ngFor="let p of projects" [value]="p.id">{{p.name}}</mat-option>
+          </mat-select>
+        </div>
+        <h1 class="page-title" *ngIf="view === 'calendar'">Calendar</h1>
+      </div>
+
+    
+      <div class="header-right" *ngIf="view === 'board'" style="display: flex; gap: 16px; align-items: center;">
+        <div class="search-bar" style="position: relative;">
+          <mat-icon style="position: absolute; left: 10px; top: 10px; color: #6b7280; font-size: 18px;">search</mat-icon>
+         
+          <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onFilterChange()" placeholder="Search tasks..." 
+                 style="background: #1f2937; border: 1px solid #374151; color: white; border-radius: 8px; padding: 8px 12px 8px 36px; width: 200px; outline: none;">
+        </div>
+        <label style="display: flex; align-items: center; gap: 8px; color: #d1d5db; font-size: 14px; cursor: pointer;">
+          <input type="checkbox" [(ngModel)]="onlyMyTasks" (ngModelChange)="onFilterChange()" style="accent-color: #6366f1; width: 16px; height: 16px; cursor: pointer;">
+          Only My Tasks
+        </label>
+      </div>
+    </header>
+    <div class="content-scrollable">
+
+    
+      <div *ngIf="view === 'dashboard'" class="animate-fade">
+        <div class="page-header" style="margin-bottom: 32px;">
+          <h2>Welcome back, {{ currentUser?.first_name || currentUser?.username || 'Team Member' }}!</h2>
+          <p class="subtitle">Here is a summary of your work in this project.</p>
+        </div>
+
+  
+        <div class="stats-grid" style="margin-bottom: 40px;">
+          <div class="stat-box">
+            <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: #fbbf24;"><mat-icon>assignment_late</mat-icon></div>
+            <div class="stat-info"><span class="stat-value">{{ myPendingTasks.length }}</span><span class="stat-label">Pending Tasks</span></div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: #34d399;"><mat-icon>task_alt</mat-icon></div>
+            <div class="stat-info"><span class="stat-value">{{ myCompletedCount }}</span><span class="stat-label">Tasks Completed</span></div>
+          </div>
+        </div>
+
+     
+        <div class="premium-card" style="max-width: 800px; padding: 24px;">
+          <h3 style="margin-top: 0; margin-bottom: 16px; color: #f3f4f6; display: flex; align-items: center; gap: 8px;">
+            <mat-icon style="color: #818cf8;">list_alt</mat-icon> My Active Tasks
+          </h3>
+          
+          <div *ngIf="myPendingTasks.length === 0" style="text-align: center; color: #6b7280; padding: 20px;">
+            You have no active tasks assigned to you right now. Great job!
+          </div>
+
+          <div *ngFor="let t of myPendingTasks" class="activity-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <div>
+              <span style="color: #9ca3af; font-family: monospace; font-size: 12px; margin-right: 8px;">{{ t.id | slice:0:8 }}</span>
+              <strong style="color: #e5e7eb; font-size: 14px;">{{ t.title }}</strong>
+            </div>
+            <div style="display: flex; gap: 12px; align-items: center;">
+              <span class="priority-badge p-{{t.priority_id}}">
+                <mat-icon>flag</mat-icon> {{ t.priority_id === 3 ? 'High' : (t.priority_id === 2 ? 'Med' : 'Low') }}
+              </span>
+              <span style="font-size: 12px; color: #9ca3af; background: #1f2937; padding: 4px 8px; border-radius: 4px;">
+                {{ getStatusName(t) }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    
+      <div *ngIf="view === 'board'" class="board-container animate-fade">
+        <div class="kanban-columns">
+
+        
+          <div class="kanban-col">
+            <div class="col-header"><div class="col-title"><span class="dot todo"></span> To Do <span class="count">{{ todoTasks.length }}</span></div></div>
+            <div class="col-body" cdkDropList id="todoList" [cdkDropListData]="todoTasks" [cdkDropListConnectedTo]="['progressList','doneList']" (cdkDropListDropped)="drop($event, 1)">
+              <div *ngIf="todoTasks.length === 0" style="text-align: center; padding: 20px; color: #6b7280; font-size: 13px;">No tasks.</div>
+
+              <div class="issue-card" *ngFor="let task of todoTasks" cdkDrag>
+                <div class="issue-header">
+                  <span class="issue-id">{{ task.id | slice:0:8 }}</span>
+                  <div class="priority-icon p-{{task.priority_id}}"><mat-icon>signal_cellular_alt</mat-icon></div>
+                </div>
+                <h4 class="issue-title">{{ task.title }}</h4>
+                <div class="issue-footer">
+                  
+                
+                  <select class="status-select" [(ngModel)]="task.status_id" (ngModelChange)="changeStatus(task, $event)">
+                    <option [ngValue]="1">To Do</option>
+                    <option [ngValue]="2">In Progress</option>
+                    <option [ngValue]="3">Done</option>
+                  </select>
+
+                  <div class="story-points" *ngIf="task.story_points" title="Story Points">
+                    <mat-icon>change_history</mat-icon> {{task.story_points}}
+                  </div>
+                  <div class="spacer"></div>
+                  <button class="icon-btn" (click)="openCommentsDialog(task)" title="Comments" style="padding: 4px; margin-right: 8px;">
+                    <mat-icon style="font-size: 16px; width: 16px; height: 16px; color: #a1a1aa;">forum</mat-icon>
+                  </button>
+                  <div class="avatar-sm" *ngFor="let a of task.task_assignees" [title]="a.user_id">{{getAvatar(a.user_id)}}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+      
+          <div class="kanban-col">
+            <div class="col-header"><div class="col-title"><span class="dot progress"></span> In Progress <span class="count">{{ inProgressTasks.length }}</span></div></div>
+            <div class="col-body" cdkDropList id="progressList" [cdkDropListData]="inProgressTasks" [cdkDropListConnectedTo]="['todoList','doneList']" (cdkDropListDropped)="drop($event, 2)">
+              <div *ngIf="inProgressTasks.length === 0" style="text-align: center; padding: 20px; color: #6b7280; font-size: 13px;">No tasks.</div>
+
+              <div class="issue-card" *ngFor="let task of inProgressTasks" cdkDrag>
+                <div class="issue-header">
+                  <span class="issue-id">{{ task.id | slice:0:8 }}</span>
+                  <div class="priority-icon p-{{task.priority_id}}"><mat-icon>signal_cellular_alt</mat-icon></div>
+                </div>
+                <h4 class="issue-title">{{ task.title }}</h4>
+                <div class="issue-footer">
+                  
+            
+                  <select class="status-select progress-select" [(ngModel)]="task.status_id" (ngModelChange)="changeStatus(task, $event)">
+                    <option [ngValue]="1">To Do</option>
+                    <option [ngValue]="2">In Progress</option>
+                    <option [ngValue]="3">Done</option>
+                  </select>
+
+                  <div class="story-points" *ngIf="task.story_points" title="Story Points">
+                    <mat-icon>change_history</mat-icon> {{task.story_points}}
+                  </div>
+                  <div class="spacer"></div>
+                  <button class="icon-btn" (click)="openCommentsDialog(task)" title="Comments" style="padding: 4px; margin-right: 8px;">
+                    <mat-icon style="font-size: 16px; width: 16px; height: 16px; color: #a1a1aa;">forum</mat-icon>
+                  </button>
+                  <div class="avatar-sm" *ngFor="let a of task.task_assignees" [title]="a.user_id">{{getAvatar(a.user_id)}}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        
+          <div class="kanban-col">
+            <div class="col-header"><div class="col-title"><span class="dot done"></span> Done <span class="count">{{ completedTasks.length }}</span></div></div>
+            <div class="col-body" cdkDropList id="doneList" [cdkDropListData]="completedTasks" [cdkDropListConnectedTo]="['todoList','progressList']" (cdkDropListDropped)="drop($event, 3)">
+              <div *ngIf="completedTasks.length === 0" style="text-align: center; padding: 20px; color: #6b7280; font-size: 13px;">No tasks.</div>
+
+              <div class="issue-card done-card" *ngFor="let task of completedTasks" cdkDrag>
+                <div class="issue-header">
+                  <span class="issue-id">{{ task.id | slice:0:8 }}</span>
+                  <mat-icon class="done-icon">check_circle</mat-icon>
+                </div>
+                <h4 class="issue-title" style="text-decoration: line-through; color: var(--text-muted)">{{ task.title }}</h4>
+                <div class="issue-footer">
+                  
+                 
                   <select class="status-select done-select" [(ngModel)]="task.status_id" (ngModelChange)="changeStatus(task, $event)">
                     <option [ngValue]="1">To Do</option>
                     <option [ngValue]="2">In Progress</option>
@@ -215,11 +453,10 @@
           </div>
         </div>
       </div>
-      <!-- ================= CALENDAR VIEW ================= -->
-  <!-- ================= CALENDAR VIEW ================= -->
+    
       <div *ngIf="view === 'calendar'" class="animate-fade calendar-wrapper">
         
-        <!-- 👇 FIX: Added [canCreate]="false" so employees cannot click empty days! -->
+       
         <app-calendar 
            [projects]="projects" 
            [users]="users" 
@@ -233,347 +470,4 @@
 </div>
 
 
-
-<!-- 
-<div class="dashboard-container">
-
-  <div class="navbar">
-  <div class="logo">
-    <i class="fa-solid fa-briefcase"></i>
-    <span>Employee Dashboard</span>
-  </div>
-
-  <div class="nav-actions">
-    
-     <button (click)="toggleTheme()" class="theme-btn">
-  <i 
-    [ngClass]="isDarkMode 
-      ? 'fa-solid fa-moon' 
-      : 'fa-solid fa-cloud-sun'">
-  </i>
-</button>
-
-
-  
-
-    <button class="logout-btn" (click)="logout()">
-      <i class="fa-solid fa-right-from-bracket"></i>
-      Logout
-    </button>
-  </div>
-</div>
-
-
-  <div class="kanban-board">
-
-    <div class="kanban-column todo-column">
-
-      <div class="column-header">
-        <span>
-          <i class="fa-solid fa-list-check"></i>
-          To Do
-        </span>
-        <span class="task-count">{{ todoTasks.length }}</span>
-      </div>
-
-     <div class="column-body"
-  cdkDropList
-  id="todoList"
-  [cdkDropListData]="todoTasks"
-  [cdkDropListConnectedTo]="['progressList','doneList']"
-  (cdkDropListDropped)="drop($event, 'To Do')">
-
-        <div
-          class="task-card"
-          *ngFor="let task of todoTasks"
-          cdkDrag
-        >
-          <h4>
-            <i class="fa-solid fa-thumbtack"></i>
-            {{ task.title }}
-          </h4>
-
-          <p class="task-id">Task #{{ task.id }}</p>
-
-
-            <p class="task-description">
-    {{ task.description }}
-  </p>
-
-          <select
-            [value]="task.status"
-            (change)="changeStatus(task.id, $any($event.target).value)"
-          >
-           <option *ngFor="let status of STATUSES" [value]="status">
-              {{ status }}
-           </option>
-          </select>
-        </div>
-      </div>
-
-    </div>
-
-
-    <div class="kanban-column progress-column">
-
-      <div class="column-header">
-        <span>
-          <i class="fa-solid fa-spinner"></i>
-          In Progress
-        </span>
-        <span class="task-count">{{ inProgressTasks.length }}</span>
-      </div>
-
-      <div class="column-body"
-  cdkDropList
-  id="progressList"
-  [cdkDropListData]="inProgressTasks"
-  [cdkDropListConnectedTo]="['todoList','doneList']"
-  (cdkDropListDropped)="drop($event, 'In Progress')">
-
-        <div
-          class="task-card"
-          *ngFor="let task of inProgressTasks"
-          cdkDrag
-        >
-          <h4>{{ task.title }}</h4>
-
-          <p class="task-id">Task #{{ task.id }}</p>
-
-          <p class="task-description">
-    {{ task.description }}
-  </p>
-
-          <select
-            [value]="task.status"
-            (change)="changeStatus(task.id, $any($event.target).value)"
-          >
-            <option *ngFor="let status of STATUSES" [value]="status">
-                {{ status }}
-            </option>
-          </select>
-        </div>
-      </div>
-
-    </div>
-
-
-    <div class="kanban-column done-column">
-
-      <div class="column-header">
-        <span>
-          <i class="fa-solid fa-circle-check"></i>
-          Completed
-        </span>
-        <span class="task-count">{{ completedTasks.length }}</span>
-      </div>
-
-      <div class="column-body"
-  cdkDropList
-  id="doneList"
-  [cdkDropListData]="completedTasks"
-  [cdkDropListConnectedTo]="['todoList','progressList']"
-  (cdkDropListDropped)="drop($event, 'Completed')">
-
-        <div
-          class="task-card"
-          *ngFor="let task of completedTasks"
-          cdkDrag
-        >
-          <h4>{{ task.title }}</h4>
-
-          <p class="task-id">Task #{{ task.id }}</p>
-
-            <p class="task-description">
-    {{ task.description }}
-  </p>
-
-          <select
-            [value]="task.status"
-            (change)="changeStatus(task.id, $any($event.target).value)"
-          >
-            <option *ngFor="let status of STATUSES" [value]="status">
-              {{ status }}
-            </option>
-          </select>
-        </div>
-      </div>
-
-    </div>
-
-  </div>
-
-</div> -->
-
-<!-- <div class="premium-layout">
-
-  <!-- 
-  <header class="glass-header">
-    <div class="header-left">
-      <div class="brand">
-        <div class="brand-icon"><mat-icon>layers</mat-icon></div>
-        <span class="brand-name">TaskFlow</span>
-      </div>
-      
-      <div class="divider"></div>
-      
-      <!-- <div class="breadcrumb">
-        <mat-icon>folder</mat-icon>
-        <mat-select class="invisible-select" [(ngModel)]="selectedProjectId" (selectionChange)="onProjectChange($event.value)">
-          <mat-option value="" disabled selected>Select Workspace...</mat-option>
-          <mat-option *ngFor="let p of projects" [value]="p.id">{{ p.name }}</mat-option>
-        </mat-select>
-      </div> -->
-   <!-- </div>
-
-    <div class="header-right">
-      <div class="user-profile">
-        <div class="avatar-sm">EM</div>
-        <div class="user-info">
-          <span class="user-name">Employee</span>
-        </div>
-      </div>
-      <button class="icon-btn logout-btn" (click)="logout()" title="Logout">
-        <mat-icon>logout</mat-icon>
-      </button>
-    </div>
-  </header>
-
-  <!-- 
-  <main class="content-scrollable">
-
-    <div *ngIf="!selectedProjectId" class="empty-state animate-fade">
-      <mat-icon>view_kanban</mat-icon>
-      <h2>No Workspace Selected</h2>
-      <p>Please select a project workspace from the top menu to view your tasks.</p>
-    </div>
-
-    <div *ngIf="selectedProjectId" class="board-container animate-fade">
-      <div class="kanban-columns">
-
-        <!-- 
-        <div class="kanban-col">
-          <div class="col-header">
-            <div class="col-title"><span class="dot todo"></span> To Do <span class="count">{{ todoCount }}</span></div>
-          </div>
-          <div class="col-body" cdkDropList id="todoList" [cdkDropListData]="todoTasks" [cdkDropListConnectedTo]="['progressList','doneList']" (cdkDropListDropped)="drop($event,'To Do')">
-            <div class="issue-card" *ngFor="let task of todoTasks" cdkDrag>
-              
-              <div class="issue-header">
-                <span class="issue-id">{{ task.id | slice:0:8 }}</span>
-              </div>
-              
-              <h4 class="issue-title">{{ task.title }}</h4>
-              
-              <div class="issue-footer">
-                <select class="status-select" [value]="getStatusName(task)" (change)="changeStatus(task.id, $any($event.target).value)">
-                  <option *ngFor="let s of STATUSES" [value]="s">{{ s }}</option>
-                </select>
-
-                <div class="priority-badge p-{{task.priority_id}}" style="margin-left: 8px;">
-                  <mat-icon>flag</mat-icon> {{ task.priority_id === 3 ? 'High' : (task.priority_id === 2 ? 'Med' : 'Low') }}
-                </div>
-                
-                <div class="story-points" *ngIf="task.story_points" title="Story Points">
-                  <mat-icon>change_history</mat-icon> {{task.story_points}}
-                </div>
-                
-                <div class="spacer"></div>
-                
-                <!-- 
-                <button class="icon-btn" (click)="openCommentsDialog(task)" title="Comments" style="padding: 4px; margin-right: 8px;">
-                  <mat-icon style="font-size: 16px; width: 16px; height: 16px; color: #a1a1aa;">forum</mat-icon>
-                </button>
-
-                <div class="avatar-sm" *ngFor="let a of task.task_assignees" [title]="a.user_id">{{getAvatar(a.user_id)}}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 
-        <div class="kanban-col">
-          <div class="col-header">
-            <div class="col-title"><span class="dot progress"></span> In Progress <span class="count">{{ inProgressCount }}</span></div>
-          </div>
-          <div class="col-body" cdkDropList id="progressList" [cdkDropListData]="inProgressTasks" [cdkDropListConnectedTo]="['todoList','doneList']" (cdkDropListDropped)="drop($event,'In Progress')">
-            <div class="issue-card" *ngFor="let task of inProgressTasks" cdkDrag>
-              
-              <div class="issue-header">
-                <span class="issue-id">{{ task.id | slice:0:8 }}</span>
-              </div>
-              
-              <h4 class="issue-title">{{ task.title }}</h4>
-              
-              <div class="issue-footer">
-                <select class="status-select progress-select" [value]="getStatusName(task)" (change)="changeStatus(task.id, $any($event.target).value)">
-                  <option *ngFor="let s of STATUSES" [value]="s">{{ s }}</option>
-                </select>
-
-                <div class="priority-badge p-{{task.priority_id}}" style="margin-left: 8px;">
-                  <mat-icon>flag</mat-icon> {{ task.priority_id === 3 ? 'High' : (task.priority_id === 2 ? 'Med' : 'Low') }}
-                </div>
-                
-                <div class="story-points" *ngIf="task.story_points" title="Story Points">
-                  <mat-icon>change_history</mat-icon> {{task.story_points}}
-                </div>
-                
-                <div class="spacer"></div>
-                
-                <!-- 
-                <button class="icon-btn" (click)="openCommentsDialog(task)" title="Comments" style="padding: 4px; margin-right: 8px;">
-                  <mat-icon style="font-size: 16px; width: 16px; height: 16px; color: #a1a1aa;">forum</mat-icon>
-                </button>
-
-                <div class="avatar-sm" *ngFor="let a of task.task_assignees" [title]="a.user_id">{{getAvatar(a.user_id)}}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 
-        <div class="kanban-col">
-          <div class="col-header">
-            <div class="col-title"><span class="dot done"></span> Done <span class="count">{{ completedCount }}</span></div>
-          </div>
-          <div class="col-body" cdkDropList id="doneList" [cdkDropListData]="completedTasks" [cdkDropListConnectedTo]="['todoList','progressList']" (cdkDropListDropped)="drop($event,'Completed')">
-            <div class="issue-card done-card" *ngFor="let task of completedTasks" cdkDrag>
-              
-              <div class="issue-header">
-                <span class="issue-id">{{ task.id | slice:0:8 }}</span>
-                <mat-icon class="done-icon">check_circle</mat-icon>
-              </div>
-              
-              <h4 class="issue-title" style="text-decoration: line-through; color: var(--text-muted)">{{ task.title }}</h4>
-              
-              <div class="issue-footer">
-                <select class="status-select done-select" [value]="getStatusName(task)" (change)="changeStatus(task.id, $any($event.target).value)">
-                  <option *ngFor="let s of STATUSES" [value]="s">{{ s }}</option>
-                </select>
-
-                <div class="priority-badge p-{{task.priority_id}}" style="margin-left: 8px;">
-                  <mat-icon>flag</mat-icon> {{ task.priority_id === 3 ? 'High' : (task.priority_id === 2 ? 'Med' : 'Low') }}
-                </div>
-                
-                <div class="story-points" *ngIf="task.story_points" title="Story Points">
-                  <mat-icon>change_history</mat-icon> {{task.story_points}}
-                </div>
-                
-                <div class="spacer"></div>
-                
-                <!-- 
-                <button class="icon-btn" (click)="openCommentsDialog(task)" title="Comments" style="padding: 4px; margin-right: 8px;">
-                  <mat-icon style="font-size: 16px; width: 16px; height: 16px; color: #a1a1aa;">forum</mat-icon>
-                </button>
-
-                <div class="avatar-sm" *ngFor="let a of task.task_assignees" [title]="a.user_id">{{getAvatar(a.user_id)}}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-      </div>
-
-  </main>
-</div> -->
+ -->

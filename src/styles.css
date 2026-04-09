@@ -55,17 +55,6 @@ box-shadow: var(--shadow);
 }
 
 
-/* :root {
-  
-  --bg-main: #0f172a;
-  --bg-navbar: #111827;
-  --bg-card: #1f2937;
-  --text-primary: #ffffff;
-  --text-secondary: #cbd5e1;
-
-  --navbar-border: #ffffff;
-  --border-color: #ffffff;
-} */
 
 body.light-theme {
   /* LIGHT THEME */
@@ -83,4 +72,133 @@ body {
   background: var(--bg-main);
   color: var(--text-primary);
   transition: 0.3s ease;
+}
+
+/* =======================================================
+   📱 FAANG MOBILE RESPONSIVENESS (MAX-WIDTH: 768px)
+======================================================== */
+@media (max-width: 768px) {
+  
+  /* 1. LAYOUT & SIDEBAR (Off-canvas Drawer) */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -100%; /* Hidden by default */
+    bottom: 0;
+    z-index: 1000;
+    width: 280px;
+    box-shadow: 4px 0 15px rgba(0,0,0,0.5);
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* When the 'open' class is applied via Angular */
+  .sidebar.sidebar-open {
+    left: 0; 
+  }
+
+  /* Hide the hamburger button on desktop, show on mobile */
+  .mobile-menu-toggle {
+    display: flex !important;
+  }
+
+  .main-content {
+    margin-left: 0 !important; /* Override desktop margin */
+    width: 100%;
+  }
+
+  /* 2. KANBAN BOARD (Trello-style Horizontal Swipe) */
+  .kanban-columns {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 24px;
+    gap: 16px;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  }
+
+  /* Make columns take up 85% of screen so the user sees the edge of the next column */
+  .kanban-col {
+    min-width: 85vw;
+    scroll-snap-align: center;
+    flex-shrink: 0;
+  }
+
+  /* 3. GRIDS & CARDS (Stack vertically) */
+  .stats-grid, 
+  .projects-grid, 
+  .team-grid {
+    grid-template-columns: 1fr !important; /* Force single column */
+    gap: 16px;
+  }
+
+  /* 4. HEADER & BREADCRUMBS */
+  .glass-header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px;
+    gap: 16px;
+    height: auto;
+  }
+
+  .header-left {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .header-right {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .search-bar input {
+    width: 100% !important; /* Make search bar full width */
+  }
+
+  /* 5. FORMS (Stack side-by-side inputs) */
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .form-group {
+    width: 100%;
+  }
+
+  /* Center forms take full width */
+  .center-form .premium-form-card {
+    width: 100%;
+    margin: 16px;
+    padding: 24px;
+  }
+}
+
+/* =======================================================
+   💻 DESKTOP FIXES 
+======================================================== */
+.mobile-menu-toggle {
+  display: none; /* Hidden on desktop */
+  background: transparent;
+  border: none;
+  color: #e5e7eb;
+  cursor: pointer;
+  padding: 8px;
+  margin-left: -8px;
+}
+
+/* Optional Overlay for when Mobile Menu is open */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(2px);
+  z-index: 999;
+}
+@media (max-width: 768px) {
+  .sidebar-overlay.sidebar-open { display: block; }
 }

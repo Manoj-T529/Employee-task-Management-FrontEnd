@@ -350,3 +350,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   opacity: 0.8;
   cursor: pointer;
 }
+
+.invalid { border-color: #ef4444 !important; }
+.error-text { color: #ef4444; font-size: 12px; margin-top: 4px; display: block; }
+.spinner { animation: spin 1s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }

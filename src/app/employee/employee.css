@@ -306,3 +306,63 @@
 ::ng-deep .cdk-overlay-pane .mat-mdc-select-panel {
   width: 100% !important;
 }
+
+
+/* ================= MOBILE RESPONSIVENESS & SIDEBAR FIX ================= */
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 15; /* Sits just below the sidebar */
+  transition: opacity 0.3s ease;
+}
+
+.mobile-menu-btn {
+  display: none;
+  background: transparent; border: none; color: var(--text-main);
+  padding: 8px; margin-right: 8px; cursor: pointer; border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  /* Fix the broken sidebar overlay */
+  .sidebar {
+    position: fixed;
+    left: 0; top: 0; height: 100%;
+    transform: translateX(-100%); /* Hidden by default */
+    background-color: #09090b !important; /* Solid dark background */
+    box-shadow: none;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 20;
+  }
+  
+  /* Classes applied when hamburger is clicked */
+  .sidebar.mobile-open {
+    transform: translateX(0);
+    box-shadow: 10px 0 30px rgba(0,0,0,0.8);
+  }
+  .sidebar-backdrop.mobile-open {
+    display: block;
+    animation: fadeIn 0.3s ease;
+  }
+  
+  .mobile-menu-btn { display: flex; align-items: center; justify-content: center; }
+
+  /* Mobile Kanban Layout Improvements */
+  .kanban-columns {
+    scroll-snap-type: x mandatory; /* Smooth swiping between columns */
+    padding-bottom: 24px;
+  }
+  .kanban-col {
+    min-width: 85vw; /* Columns take up screen width */
+    scroll-snap-align: center;
+  }
+
+  /* FAANG Secret: Allow vertical scroll, but permit dragging */
+  .issue-card {
+    touch-action: pan-y !important; 
+  }
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

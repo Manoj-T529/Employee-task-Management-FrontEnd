@@ -1,5 +1,6 @@
 <div class="calendar-wrapper">
   
+  <!-- STICKY TOOLBAR -->
   <div class="cal-toolbar">
     <div class="nav-group">
       <button class="icon-btn" mwlCalendarPreviousView [view]="view" [(viewDate)]="viewDate" (viewDateChange)="loadTasks()">
@@ -14,8 +15,7 @@
     <div style="width: 120px;"></div> 
   </div>
 
-<!-- CUSTOM TEMPLATE TO PREVENT CONGESTION -->
-  <!-- CUSTOM TEMPLATE TO PREVENT CONGESTION -->
+  <!-- CUSTOM TEMPLATE -->
   <ng-template #customCellTemplate let-day="day" let-locale="locale">
     
     <!-- Top area: Day Number -->
@@ -23,30 +23,22 @@
       <span class="cal-day-number">{{ day.date | calendarDate:'monthViewDayNumber':locale }}</span>
     </div>
     
-    <!-- Bottom area: The Short Bars -->
+    <!-- Bottom area: Scrollable Events List -->
     <div class="cal-events-container">
-      
-      <div *ngFor="let event of getEvents(day) | slice:0:3" 
+      <div *ngFor="let event of getEvents(day)" 
            class="cal-short-bar" 
            [style.backgroundColor]="event.color?.primary"
            (click)="handleEvent(event); $event.stopPropagation()">
         
-        <!-- NEW: Priority Dot Indicator -->
         <span class="priority-dot dot-p-{{ event.meta?.priority_id || 1 }}" 
               [title]="event.meta?.priority_id === 3 ? 'High Priority' : (event.meta?.priority_id === 2 ? 'Medium Priority' : 'Low Priority')">
         </span>
 
         <span class="bar-title">{{ event.title }}</span>
       </div>
-
-      <div *ngIf="getEvents(day).length > 3" 
-           class="cal-overflow-badge"
-           (click)="dayClicked({date: day.date}); $event.stopPropagation()">
-        +{{ getEvents(day).length - 3 }} more
-      </div>
-
     </div>
   </ng-template>
+
   <!-- The Calendar Grid -->
   <mwl-calendar-month-view
     [viewDate]="viewDate"

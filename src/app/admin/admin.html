@@ -1,6 +1,589 @@
 <div class="premium-layout">
 
-  <!-- ================= SIDEBAR ================= -->
+   <div class="sidebar-backdrop" [class.mobile-open]="isSidebarOpen" (click)="toggleSidebar()"></div> <!-- ================= SIDEBAR ================= -->
+  
+   <aside class="sidebar" [class.mobile-open]="isSidebarOpen">
+    <div class="brand">
+      <div class="brand-icon"><mat-icon>layers</mat-icon></div>
+      <span class="brand-name">TaskFlow</span>
+    </div>
+
+    <div class="nav-section">
+      <span class="nav-label">Workspace</span>
+      <nav class="nav-menu">
+        <button [class.active]="view === 'dashboard'" (click)="setView('dashboard')"><mat-icon>home</mat-icon>
+          Home</button>
+        <button [class.active]="view === 'board'" (click)="setView('board')"
+          [disabled]="!selectedProject"><mat-icon>view_kanban</mat-icon> Active Board</button>
+        <button [class.active]="view === 'calendar'" (click)="setView('calendar')"><mat-icon>calendar_today</mat-icon>
+          Calendar</button>
+        <button [class.active]="view === 'activity'" (click)="setView('activity')">
+          <mat-icon>history</mat-icon> Activity Log
+        </button>
+      </nav>
+    </div>
+
+    <div class="nav-section">
+      <span class="nav-label">Management</span>
+      <nav class="nav-menu">
+        <button [class.active]="view === 'projects'"
+          (click)="setView('projects')"><mat-icon>create_new_folder</mat-icon> Projects</button>
+        <button [class.active]="view === 'tasks'" (click)="setView('tasks')"><mat-icon>add_box</mat-icon> New
+          Issue</button>
+        <button [class.active]="view === 'employees'" (click)="setView('employees')"><mat-icon>group_add</mat-icon> Team
+          Directory</button>
+      </nav>
+    </div>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="sidebar-footer">
+      <div class="user-profile">
+        <div class="user-info">
+          <span class="user-name">Admin User</span>
+          <span class="user-role">Workspace Owner</span>
+        </div>
+      </div>
+      <button class="icon-btn logout-btn" (click)="logout()" title="Logout"><mat-icon>logout</mat-icon></button>
+    </div>
+  </aside>
+
+  <!-- ================= MAIN ================= -->
+  <main class="main-content">
+
+    <!-- ================= HEADER ================= -->
+    <header class="glass-header">
+      <div class="header-left">
+        <button class="mobile-menu-toggle" (click)="toggleSidebar()">
+          <mat-icon>menu</mat-icon>
+        </button>
+        <div class="breadcrumb" *ngIf="view === 'board'">
+          <mat-icon>folder</mat-icon>
+          <mat-select class="invisible-select" [(ngModel)]="selectedProjectId" (selectionChange)="changeProject()">
+            <mat-option *ngFor="let p of projects" [value]="p.id">{{p.name}}</mat-option>
+          </mat-select>
+        </div>
+        <h1 class="page-title" *ngIf="view !== 'board'">
+          {{ view === 'dashboard' ? 'Home' : view | titlecase }}
+        </h1>
+      </div>
+    </header>
+
+    <div class="content-scrollable">
+
+
+      <!-- ================= DASHBOARD ================= -->
+      <div *ngIf="view === 'dashboard'" class="animate-fade">
+
+        <!-- DASHBOARD STATS -->
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-icon" style="background: rgba(99, 102, 241, 0.1); color: #818cf8;">
+              <mat-icon>folder</mat-icon>
+            </div>
+            <div class="stat-info"><span class="stat-value">{{totalProjects}}</span><span
+                class="stat-label">Workspaces</span></div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: #34d399;">
+              <mat-icon>check_circle</mat-icon>
+            </div>
+            <div class="stat-info"><span class="stat-value">{{activeUsers}}</span><span class="stat-label">Active
+                Users</span></div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1); color: #f87171;">
+              <mat-icon>person_off</mat-icon>
+            </div>
+            <div class="stat-info"><span class="stat-value">{{inactiveUsers}}</span><span class="stat-label">Inactive
+                Users</span></div>
+          </div>
+        </div>
+
+        <!-- PROJECTS GRID -->
+        <div class="page-header" style="margin-top: 40px; margin-bottom: 24px;">
+          <h2>Your Workspaces</h2>
+        </div>
+        <div class="projects-grid">
+          <div class="premium-card project-card" *ngFor="let p of projects" (click)="openProject(p)">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <h3>{{p.name}}</h3>
+              <button class="icon-btn" (click)="deleteProject($event, p.id)"
+                style="color: #ef4444; margin-top: -4px; margin-right: -4px;"><mat-icon>delete</mat-icon></button>
+            </div>
+            <p class="desc">{{p.description || 'No description provided.'}}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= BOARD ================= -->
+      <div *ngIf="view === 'board'" class="animate-fade board-container">
+
+        <!-- BOARD STATS (Only show when not loading) -->
+        <div class="board-stats-row" *ngIf="!isLoadingBoard">
+          <span><strong>{{totalBoardTasks}}</strong> Total Tasks</span>
+          <span class="dot-separator">•</span>
+          <span style="color: #9ca3af96;"><strong>{{todoCount}}</strong> To Do</span>
+          <span class="dot-separator">•</span>
+          <span style="color: #f59e0b;"><strong>{{inProgressCount}}</strong> In Progress</span>
+          <span class="dot-separator">•</span>
+          <span style="color: #818cf8;"><strong>{{doneCount}}</strong> Done</span>
+        </div>
+
+        <!-- SKELETON BOARD -->
+        <div class="kanban-columns" *ngIf="isLoadingBoard">
+          <div class="kanban-col" *ngFor="let i of [1,2,3]">
+            <div class="col-header">
+              <div class="skeleton skeleton-title" style="width: 40%;"></div>
+            </div>
+            <div class="col-body">
+              <div class="issue-card skeleton" style="height: 100px; padding: 16px;" *ngFor="let j of [1,2]">
+                <div class="skeleton skeleton-text" style="width: 30%;"></div>
+                <div class="skeleton skeleton-text" style="width: 80%;"></div>
+                <div style="display:flex; justify-content:space-between; margin-top:16px;">
+                  <div class="skeleton skeleton-text" style="width: 40px;"></div>
+                  <div class="skeleton skeleton-avatar"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- REAL BOARD -->
+        <div class="kanban-columns" *ngIf="!isLoadingBoard">
+
+          <!-- TO DO COLUMN -->
+          <div class="kanban-col">
+            <div class="col-header">
+              <div class="col-title"><span class="dot todo"></span> To Do <span class="count">{{ board.TODO.length || 0
+                  }}</span></div>
+            </div>
+            <div class="col-body" cdkDropList id="list-todo" [cdkDropListData]="board.TODO"
+              [cdkDropListConnectedTo]="['list-prog', 'list-done']" (cdkDropListDropped)="drop($event, 'TODO')">
+              <div class="issue-card" *ngFor="let t of board.TODO" cdkDrag[cdkDragStartDelay]="{ touch: 250, mouse: 0 }" (click)="openTaskDialog(t)">
+
+                <div class="issue-header">
+                  <span class="issue-id">{{t.id | slice:0:8}}</span>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <div class="priority-icon p-{{t.priority_id}}"><mat-icon>signal_cellular_alt</mat-icon></div>
+                    <button class="icon-btn" (click)="deleteTask($event, t.id)" style="color: #ef4444; padding: 2px;"
+                      title="Delete Task">
+                      <mat-icon style="font-size: 16px; width: 16px; height: 16px;">delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+
+                <h4 class="issue-title">{{t.title}}</h4>
+
+                <div class="issue-footer">
+
+                    <select class="status-select" [value]="t.status_id" (change)="onStatusSelectChange(t, $event)" (click)="$event.stopPropagation()">
+                    <option value="1">To Do</option>
+                    <option value="2">In Progress</option>
+                    <option value="3">Done</option>
+                  </select>
+                  
+                  <div class="priority-badge p-{{t.priority_id}}">
+                    <mat-icon>flag</mat-icon>
+                    {{ t.priority_id === 3 ? 'High' : (t.priority_id === 2 ? 'Med' : 'Low') }}
+                  </div>
+                  <div class="story-points" *ngIf="t.story_points" title="Story Points">
+                    <mat-icon>change_history</mat-icon> {{t.story_points}}
+                  </div>
+
+                  <div class="spacer"></div>
+
+                  <!-- COMMENTS BUTTON -->
+                  <button class="icon-btn" (click)="openCommentsDialog($event, t)" title="Comments"
+                    style="padding: 4px; margin-right: 8px;">
+                    <mat-icon style="font-size: 16px; width: 16px; height: 16px; color: #a1a1aa;">forum</mat-icon>
+                  </button>
+
+                  <div class="avatar-sm" *ngFor="let a of t.task_assignees" [title]="a.user_id">{{getAvatar(a.user_id)}}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- IN PROGRESS COLUMN -->
+          <div class="kanban-col">
+            <div class="col-header">
+              <div class="col-title"><span class="dot progress"></span> In Progress <span class="count">{{
+                  board.IN_PROGRESS.length || 0 }}</span></div>
+            </div>
+            <div class="col-body" cdkDropList id="list-prog" [cdkDropListData]="board.IN_PROGRESS"
+              [cdkDropListConnectedTo]="['list-todo', 'list-done']" (cdkDropListDropped)="drop($event, 'IN_PROGRESS')">
+              <div class="issue-card" *ngFor="let t of board.IN_PROGRESS" cdkDrag[cdkDragStartDelay]="{ touch: 250, mouse: 0 }" (click)="openTaskDialog(t)">
+
+                <div class="issue-header">
+                  <span class="issue-id">{{t.id | slice:0:8}}</span>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <div class="priority-icon p-{{t.priority_id}}"><mat-icon>signal_cellular_alt</mat-icon></div>
+                    <button class="icon-btn" (click)="deleteTask($event, t.id)" style="color: #ef4444; padding: 2px;"
+                      title="Delete Task">
+                      <mat-icon style="font-size: 16px; width: 16px; height: 16px;">delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+
+                <h4 class="issue-title">{{t.title}}</h4>
+
+                <div class="issue-footer">
+                  <select class="status-select" [value]="t.status_id" (change)="onStatusSelectChange(t, $event)" (click)="$event.stopPropagation()">
+                    <option value="1">To Do</option>
+                    <option value="2">In Progress</option>
+                    <option value="3">Done</option>
+                  </select>
+                  <div class="priority-badge p-{{t.priority_id}}">
+                    <mat-icon>flag</mat-icon> {{ t.priority_id === 3 ? 'High' : (t.priority_id === 2 ? 'Med' : 'Low') }}
+                  </div>
+                  <div class="story-points" *ngIf="t.story_points" title="Story Points">
+                    <mat-icon>change_history</mat-icon> {{t.story_points}}
+                  </div>
+
+                  <div class="spacer"></div>
+
+                  <!-- COMMENTS BUTTON -->
+                  <button class="icon-btn" (click)="openCommentsDialog($event, t)" title="Comments"
+                    style="padding: 4px; margin-right: 8px;">
+                    <mat-icon style="font-size: 16px; width: 16px; height: 16px; color: #a1a1aa;">forum</mat-icon>
+                  </button>
+
+                  <div class="avatar-sm" *ngFor="let a of t.task_assignees" [title]="a.user_id">{{getAvatar(a.user_id)}}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- DONE COLUMN -->
+          <div class="kanban-col">
+            <div class="col-header">
+              <div class="col-title"><span class="dot done"></span> Done <span class="count">{{ board.DONE.length || 0
+                  }}</span></div>
+            </div>
+            <div class="col-body" cdkDropList id="list-done" [cdkDropListData]="board.DONE"
+              [cdkDropListConnectedTo]="['list-todo', 'list-prog']" (cdkDropListDropped)="drop($event, 'DONE')">
+              <div class="issue-card done-card" *ngFor="let t of board.DONE" cdkDrag[cdkDragStartDelay]="{ touch: 250, mouse: 0 }" (click)="openTaskDialog(t)">
+
+                <div class="issue-header">
+                  <span class="issue-id">{{t.id | slice:0:8}}</span>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <mat-icon class="done-icon"
+                      style="font-size: 16px; width: 16px; height: 16px;">check_circle</mat-icon>
+                    <button class="icon-btn" (click)="deleteTask($event, t.id)" style="color: #ef4444; padding: 2px;"
+                      title="Delete Task">
+                      <mat-icon style="font-size: 16px; width: 16px; height: 16px;">delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+
+                <h4 class="issue-title" style="text-decoration: line-through; color: var(--text-muted)">{{t.title}}</h4>
+
+                <div class="issue-footer">
+                  <select class="status-select" [value]="t.status_id" (change)="onStatusSelectChange(t, $event)" (click)="$event.stopPropagation()">
+                    <option value="1">To Do</option>
+                    <option value="2">In Progress</option>
+                    <option value="3">Done</option>
+                  </select>
+                  <div class="priority-badge p-{{t.priority_id}}">
+                    <mat-icon>flag</mat-icon> {{ t.priority_id === 3 ? 'High' : (t.priority_id === 2 ? 'Med' : 'Low') }}
+                  </div>
+                  <div class="story-points" *ngIf="t.story_points" title="Story Points">
+                    <mat-icon>change_history</mat-icon> {{t.story_points}}
+                  </div>
+
+                  <div class="spacer"></div>
+
+                  <!-- COMMENTS BUTTON -->
+                  <button class="icon-btn" (click)="openCommentsDialog($event, t)" title="Comments"
+                    style="padding: 4px; margin-right: 8px;">
+                    <mat-icon style="font-size: 16px; width: 16px; height: 16px; color: #a1a1aa;">forum</mat-icon>
+                  </button>
+
+                  <div class="avatar-sm" *ngFor="let a of t.task_assignees" [title]="a.user_id">{{getAvatar(a.user_id)}}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div> <!-- Closes .kanban-columns -->
+      </div> <!-- Closes .board-container -->
+      <!-- ================= FORMS (Projects & Tasks) ================= -->
+      <div *ngIf="view === 'projects' || view === 'tasks'" class="animate-fade center-form">
+        <div class="premium-form-card">
+
+
+          <!-- PROJECT FORM -->
+          <form *ngIf="view === 'projects'" [formGroup]="projectForm" (ngSubmit)="createProject()">
+            <h2>New Workspace</h2>
+            <p class="subtitle">Create a new project workspace for your team.</p>
+
+            <div class="form-group"><label>Workspace Name</label><input type="text" formControlName="name"
+                placeholder="e.g. Q3 Roadmap"></div>
+            <div class="form-group"><label>Description</label><input type="text" formControlName="description"
+                placeholder="Project goals..."></div>
+            <div class="form-row">
+              <div class="form-group"><label>Start Date</label><input type="date" formControlName="start_date"></div>
+              <div class="form-group"><label>End Date</label><input type="date" formControlName="end_date"></div>
+            </div>
+
+            <!-- Disabled if required fields are empty -->
+            <button type="submit" class="primary-btn" [disabled]="projectForm.invalid"
+              [style.opacity]="projectForm.invalid ? '0.5' : '1'"
+              [style.cursor]="projectForm.invalid ? 'not-allowed' : 'pointer'">
+              Create Workspace
+            </button>
+          </form>
+
+          <!-- TASK FORM -->
+          <form *ngIf="view === 'tasks'" [formGroup]="taskForm" (ngSubmit)="createTask()">
+            <h2>Create Issue</h2>
+            <p class="subtitle">Draft a new task and assign it to your team.</p>
+
+            <div class="form-group">
+              <label>Project</label>
+              <select formControlName="project_id">
+                <option value="" disabled selected>Select a workspace...</option>
+                <option *ngFor="let p of projects" [value]="p.id">{{p.name}}</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Issue Title</label><input type="text" formControlName="title"
+                placeholder="What needs to be done?"></div>
+            <div class="form-group"><label>Description</label><input type="text" formControlName="description"
+                placeholder="Add technical details..."></div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Priority</label>
+                <select formControlName="priority_id">
+                  <option [ngValue]="1">Low</option>
+                  <option [ngValue]="2">Medium</option>
+                  <option [ngValue]="3">High</option>
+                </select>
+              </div>
+              <div class="form-group"><label>Story Points</label><input type="number" formControlName="story_points"
+                  placeholder="e.g. 3"></div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group"><label>Start Date</label><input type="date" formControlName="start_date"></div>
+              <div class="form-group"><label>Due Date</label><input type="date" formControlName="due_date"></div>
+            </div>
+
+            <div class="form-group">
+              <label>Assign To</label>
+              <mat-select multiple formControlName="task_assignees" class="custom-mat-select"
+                placeholder="Select Team Members...">
+                <mat-option *ngFor="let u of users" [value]="u.id">{{u.first_name || u.last_name || u.username}}
+                  ({{u.email}})</mat-option>
+              </mat-select>
+            </div>
+
+            <button type="submit" class="primary-btn" [disabled]="taskForm.invalid"
+              [style.opacity]="taskForm.invalid ? '0.5' : '1'"
+              [style.cursor]="taskForm.invalid ? 'not-allowed' : 'pointer'">
+              Create Issue
+            </button>
+          </form>
+
+
+
+        </div>
+      </div>
+
+      <!-- ================= EMPLOYEES (TEAM DIRECTORY) ================= -->
+      <div *ngIf="view === 'employees'" class="animate-fade">
+        <div class="page-header"
+          style="display: flex; flex-direction: column; align-items: flex-start; gap: 16px; margin-bottom: 32px;">
+          <h2 style="margin: 0; font-size: 28px;">Team Directory</h2>
+          <button class="primary-btn" style="width: auto; height: 36px; margin: 0; padding: 0 16px;"
+            (click)="view = 'invite'">
+            <mat-icon>person_add</mat-icon> Invite Member
+          </button>
+        </div>
+
+
+        <div class="team-grid">
+          <div class="premium-card team-card" *ngFor="let u of users">
+            <div class="card-header" style="justify-content: flex-start; gap: 16px; position: relative;">
+
+              <!-- Delete Employee Button -->
+              <button class="icon-btn" (click)="deleteEmployee(u.id)"
+                style="position: absolute; top: -10px; right: -10px; color: #ef4444;">
+                <mat-icon style="font-size: 18px;">delete</mat-icon>
+              </button>
+
+              <div class="avatar-lg">{{getAvatar(u.id)}}</div>
+              <div>
+                <h3 style="margin-bottom: 4px;">{{u.first_name || u.last_name || u.username}} {{u.last_name || ''}}</h3>
+                <span class="status-pill" [class.active]="u.status === 'ACTIVE'">{{u.status || 'ACTIVE'}}</span>
+              </div>
+            </div>
+            <p class="desc" style="display: flex; align-items: center; gap: 6px;">
+              <mat-icon style="font-size:16px; width:16px; height:16px;">mail</mat-icon> {{u.email}}
+            </p>
+            <div class="role-footer">
+              <div>ROLE</div>
+              <span>{{u.role}}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ================= INVITE FORM ================= -->
+      <div *ngIf="view === 'invite'" class="animate-fade center-form">
+        <form class="premium-form-card" [formGroup]="inviteForm" (ngSubmit)="createEmployee()">
+          <h2>Invite Teammate</h2>
+          <p class="subtitle">Add a new member to your organization.</p>
+
+          <div class="form-row">
+            <div class="form-group"><label>First Name</label><input type="text" formControlName="first_name"></div>
+            <div class="form-group"><label>Last Name</label><input type="text" formControlName="last_name"></div>
+          </div>
+          <div class="form-group"><label>Username</label><input type="text" formControlName="username"></div>
+          <div class="form-group"><label>Email Address</label><input type="email" formControlName="email"></div>
+          <div class="form-group"><label>Temporary Password</label><input type="password" formControlName="password">
+          </div>
+
+          <div class="form-row">
+            <button type="button" class="cancel-btn" style="flex: 1;" (click)="view = 'employees'">Cancel</button>
+            <button type="submit" class="primary-btn" style="flex: 1; margin-top: 0;" [disabled]="inviteForm.invalid"
+              [style.opacity]="inviteForm.invalid ? '0.5' : '1'"
+              [style.cursor]="inviteForm.invalid ? 'not-allowed' : 'pointer'">
+              Send Invitation
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+
+
+
+<div *ngIf="view === 'calendar'" class="animate-fade calendar-wrapper">
+  <app-calendar [projects]="projects" [users]="users" (taskCreated)="loadBoard(selectedProjectId)"></app-calendar>
+</div>
+<!-- ================= GLOBAL ACTIVITY LOG ================= -->
+<div *ngIf="view === 'activity'" class="animate-fade">
+  <div class="page-header" style="margin-bottom: 24px;">
+    <h2>Global Workspace Activity</h2>
+    <p class="subtitle" style="color: var(--text-muted);">Recent actions across all projects.</p>
+  </div>
+
+  <div class="activity-feed-container" style="max-width: 800px;">
+    <div class="premium-card" style="padding: 0; background: #0b1121; border-color: rgba(255,255,255,0.05);">
+
+      <!-- Loop through logs -->
+      <!-- Loop through logs -->
+      <div class="activity-row" *ngFor="let log of globalAuditLogs" (click)="toggleLogDetails(log)"
+        style="display: flex; flex-direction: column; padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: background 0.2s;">
+
+        <div style="display: flex; gap: 16px; align-items: flex-start; width: 100%;">
+          <!-- User Avatar -->
+          <div class="avatar-sm"
+            style="background: #1f2937; color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1); width: 36px; height: 36px; font-size: 13px;">
+            {{ getAvatar(log.performed_by) }}
+          </div>
+
+          <!-- Activity Content -->
+          <div style="flex: 1;">
+
+            <p style="margin: 0; font-size: 14px; color: #e2e8f0; line-height: 1.5;">
+
+              <strong style="color: #c7d2fe;">{{ getUserName(log.performed_by) }}</strong>
+
+
+              <span style="color: #9ca3af; margin: 0 4px;">{{ formatLogMessage(log) }}</span>
+
+
+              <span *ngIf="log.entity_type === 'TASK'" (click)="fetchAndOpenTask($event, log.entity_id)"
+                style="background: rgba(99, 102, 241, 0.1); color: #818cf8; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-family: monospace; border: 1px solid rgba(99,102,241,0.2); cursor: pointer; transition: background 0.2s;"
+                onmouseover="this.style.background='rgba(99, 102, 241, 0.2)'"
+                onmouseout="this.style.background='rgba(99, 102, 241, 0.1)'">
+                {{ log.entity_id | slice:0:8 }}
+              </span>
+            </p>
+
+            <!-- Metadata Row -->
+            <div style="display: flex; align-items: center; gap: 6px; margin-top: 8px;">
+              <mat-icon [style.color]="getLogColor(log)" style="font-size: 14px; width: 14px; height: 14px;">
+                {{ getLogIcon(log) }}
+              </mat-icon>
+              <span style="font-size: 12px; color: #6b7280;">{{ log.performed_at | date:'MMM d, y, h:mm a' }}</span>
+
+
+
+            </div>
+          </div>
+
+          <!-- Expand Chevron -->
+          <mat-icon style="color: #6b7280; transition: transform 0.3s;"
+            [style.transform]="log.expanded ? 'rotate(180deg)' : 'rotate(0deg)'">
+            expand_more
+          </mat-icon>
+        </div>
+
+        <!-- EXPANDED DIFF VIEW -->
+        <div *ngIf="log.expanded" class="log-details animate-fade"
+          style="margin-left: 52px; margin-top: 16px; background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+
+          <!-- No changes message -->
+          <div *ngIf="getLogChanges(log).length === 0" style="color: #9ca3af; font-size: 13px;">
+            No specific property changes recorded.
+          </div>
+
+          <!-- Change List -->
+          <!-- Change List -->
+          <div *ngFor="let change of getLogChanges(log)"
+            style="display: flex; align-items: center; gap: 12px; font-size: 13px; margin-bottom: 8px;">
+
+            <!-- If it's an UPDATE (Old value exists) -->
+            <ng-container *ngIf="change.oldVal !== 'None'">
+              <strong style="color: #9ca3af; width: 120px;">{{ change.key }}:</strong>
+              <span
+                style="color: #f87171; text-decoration: line-through; background: rgba(248, 113, 113, 0.1); padding: 2px 6px; border-radius: 4px;">
+                {{ change.oldVal }}
+              </span>
+              <mat-icon style="font-size: 14px; width: 14px; height: 14px; color: #6b7280;">arrow_forward</mat-icon>
+              <span style="color: #34d399; background: rgba(52, 211, 153, 0.1); padding: 2px 6px; border-radius: 4px;">
+                {{ change.newVal }}
+              </span>
+            </ng-container>
+
+            <!-- If it's NEW (No old value existed) -->
+            <ng-container *ngIf="change.oldVal === 'None'">
+              <strong style="color: #9ca3af; width: 120px;">Set {{ change.key }} to:</strong>
+              <span style="color: #818cf8; background: rgba(129, 140, 248, 0.1); padding: 2px 6px; border-radius: 4px;">
+                {{ change.newVal }}
+              </span>
+            </ng-container>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="globalAuditLogs.length === 0" style="padding: 40px; text-align: center; color: #6b7280;">
+        <mat-icon
+          style="font-size: 48px; width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.5;">history</mat-icon>
+        <p>No recent activity found.</p>
+      </div>
+
+    </div>
+  </div>
+</div> <!-- Closes content-scrollable -->
+</main> <!-- Closes main-content -->
+</div> <!-- Closes premium-layout -->
+
+
+<!--
+<div class="premium-layout">
+
+ 
   <aside class="sidebar">
     <div class="brand">
       <div class="brand-icon"><mat-icon>layers</mat-icon></div>
@@ -41,10 +624,10 @@
     </div>
   </aside>
 
-  <!-- ================= MAIN ================= -->
+ 
   <main class="main-content">
 
-    <!-- ================= HEADER ================= -->
+   
     <header class="glass-header">
       <div class="header-left">
         <div class="breadcrumb" *ngIf="view === 'board'">
@@ -62,10 +645,10 @@
     <div class="content-scrollable">
 
 
-      <!-- ================= DASHBOARD ================= -->
+     
       <div *ngIf="view === 'dashboard'" class="animate-fade">
         
-        <!-- DASHBOARD STATS -->
+      
         <div class="stats-grid">
           <div class="stat-box">
             <div class="stat-icon" style="background: rgba(99, 102, 241, 0.1); color: #818cf8;"><mat-icon>folder</mat-icon></div>
@@ -81,7 +664,7 @@
           </div>
         </div>
 
-        <!-- PROJECTS GRID -->
+      
         <div class="page-header" style="margin-top: 40px; margin-bottom: 24px;"><h2>Your Workspaces</h2></div>
         <div class="projects-grid">
           <div class="premium-card project-card" *ngFor="let p of projects" (click)="openProject(p)">
@@ -94,10 +677,10 @@
         </div>
       </div>
    
-     <!-- ================= BOARD ================= -->
+  
       <div *ngIf="view === 'board'" class="animate-fade board-container">
         
-        <!-- BOARD STATS (Only show when not loading) -->
+        
         <div class="board-stats-row" *ngIf="!isLoadingBoard">
           <span><strong>{{totalBoardTasks}}</strong> Total Tasks</span>
           <span class="dot-separator">•</span>
@@ -108,7 +691,7 @@
           <span style="color: #818cf8;"><strong>{{doneCount}}</strong> Done</span>
         </div>
 
-        <!-- SKELETON BOARD -->
+        
         <div class="kanban-columns" *ngIf="isLoadingBoard">
           <div class="kanban-col" *ngFor="let i of [1,2,3]">
             <div class="col-header"><div class="skeleton skeleton-title" style="width: 40%;"></div></div>
@@ -125,10 +708,10 @@
           </div>
         </div>
         
-        <!-- REAL BOARD -->
+       
         <div class="kanban-columns" *ngIf="!isLoadingBoard">
           
-          <!-- TO DO COLUMN -->
+          
           <div class="kanban-col">
             <div class="col-header">
               <div class="col-title"><span class="dot todo"></span> To Do <span class="count">{{ board.TODO.length || 0 }}</span></div>
@@ -159,7 +742,7 @@
                   
                   <div class="spacer"></div>
                   
-                  <!-- COMMENTS BUTTON -->
+                
                   <button class="icon-btn" (click)="openCommentsDialog($event, t)" title="Comments" style="padding: 4px; margin-right: 8px;">
                     <mat-icon style="font-size: 16px; width: 16px; height: 16px; color: #a1a1aa;">forum</mat-icon>
                   </button>
@@ -170,7 +753,7 @@
             </div>
           </div>
 
-          <!-- IN PROGRESS COLUMN -->
+        
           <div class="kanban-col">
             <div class="col-header">
               <div class="col-title"><span class="dot progress"></span> In Progress <span class="count">{{ board.IN_PROGRESS.length || 0 }}</span></div>
@@ -200,7 +783,7 @@
                   
                   <div class="spacer"></div>
                   
-                  <!-- COMMENTS BUTTON -->
+               
                   <button class="icon-btn" (click)="openCommentsDialog($event, t)" title="Comments" style="padding: 4px; margin-right: 8px;">
                     <mat-icon style="font-size: 16px; width: 16px; height: 16px; color: #a1a1aa;">forum</mat-icon>
                   </button>
@@ -211,7 +794,7 @@
             </div>
           </div>
 
-          <!-- DONE COLUMN -->
+         
           <div class="kanban-col">
             <div class="col-header">
               <div class="col-title"><span class="dot done"></span> Done <span class="count">{{ board.DONE.length || 0 }}</span></div>
@@ -241,7 +824,7 @@
                   
                   <div class="spacer"></div>
                   
-                  <!-- COMMENTS BUTTON -->
+               
                   <button class="icon-btn" (click)="openCommentsDialog($event, t)" title="Comments" style="padding: 4px; margin-right: 8px;">
                     <mat-icon style="font-size: 16px; width: 16px; height: 16px; color: #a1a1aa;">forum</mat-icon>
                   </button>
@@ -252,9 +835,9 @@
             </div>
           </div>
 
-        </div> <!-- Closes .kanban-columns -->
-      </div> <!-- Closes .board-container -->
-      <!-- ================= FORMS (Projects & Tasks) ================= -->
+        </div> 
+      </div> 
+     
       <div *ngIf="view === 'projects' || view === 'tasks'" class="animate-fade center-form">
         <div class="premium-form-card">
           
@@ -301,7 +884,7 @@
         </div>
       </div>
 
-   <!-- ================= EMPLOYEES (TEAM DIRECTORY) ================= -->
+  
       <div *ngIf="view === 'employees'" class="animate-fade">
         <div class="page-header" style="display: flex; flex-direction: column; align-items: flex-start; gap: 16px; margin-bottom: 32px;">
           <h2 style="margin: 0; font-size: 28px;">Team Directory</h2>
@@ -315,7 +898,7 @@
           <div class="premium-card team-card" *ngFor="let u of users">
             <div class="card-header" style="justify-content: flex-start; gap: 16px; position: relative;">
               
-              <!-- Delete Employee Button -->
+             
               <button class="icon-btn" (click)="deleteEmployee(u.id)" style="position: absolute; top: -10px; right: -10px; color: #ef4444;">
                 <mat-icon style="font-size: 18px;">delete</mat-icon>
               </button>
@@ -337,7 +920,7 @@
         </div>
       </div>
       
-      <!-- ================= INVITE FORM ================= -->
+     
       <div *ngIf="view === 'invite'" class="animate-fade center-form">
         <div class="premium-form-card">
           <h2>Invite Teammate</h2>
@@ -356,11 +939,11 @@
         </div>
       </div>
 
-      <!-- ================= CALENDAR ================= -->
+      
       <div *ngIf="view === 'calendar'" class="animate-fade calendar-wrapper">
         <app-calendar [projects]="projects" [users]="users" (taskCreated)="loadBoard(selectedProjectId)"></app-calendar>
       </div>
-     <!-- ================= GLOBAL ACTIVITY LOG ================= -->
+ 
 <div *ngIf="view === 'activity'" class="animate-fade">
   <div class="page-header" style="margin-bottom: 24px;">
     <h2>Global Workspace Activity</h2>
@@ -370,19 +953,18 @@
   <div class="activity-feed-container" style="max-width: 800px;">
     <div class="premium-card" style="padding: 0; background: #0b1121; border-color: rgba(255,255,255,0.05);">
       
-      <!-- Loop through logs -->
-      <!-- Loop through logs -->
+   
 <div class="activity-row" *ngFor="let log of globalAuditLogs" 
      (click)="toggleLogDetails(log)"
      style="display: flex; flex-direction: column; padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: background 0.2s;">
   
   <div style="display: flex; gap: 16px; align-items: flex-start; width: 100%;">
-    <!-- User Avatar -->
+   
     <div class="avatar-sm" style="background: #1f2937; color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1); width: 36px; height: 36px; font-size: 13px;">
       {{ getAvatar(log.performed_by) }}
     </div>
     
-    <!-- Activity Content -->
+   
     <div style="flex: 1;">
 		  
       <p style="margin: 0; font-size: 14px; color: #e2e8f0; line-height: 1.5;">
@@ -402,7 +984,6 @@
 </span>
       </p>
       
-      <!-- Metadata Row -->
       <div style="display: flex; align-items: center; gap: 6px; margin-top: 8px;">
         <mat-icon [style.color]="getLogColor(log)" style="font-size: 14px; width: 14px; height: 14px;">
           {{ getLogIcon(log) }}
@@ -414,27 +995,26 @@
       </div>
     </div>
 
-    <!-- Expand Chevron -->
+   
     <mat-icon style="color: #6b7280; transition: transform 0.3s;" 
               [style.transform]="log.expanded ? 'rotate(180deg)' : 'rotate(0deg)'">
       expand_more
     </mat-icon>
   </div>
 
-  <!-- EXPANDED DIFF VIEW -->
+ 
   <div *ngIf="log.expanded" class="log-details animate-fade" 
        style="margin-left: 52px; margin-top: 16px; background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
     
-    <!-- No changes message -->
+    
     <div *ngIf="getLogChanges(log).length === 0" style="color: #9ca3af; font-size: 13px;">
       No specific property changes recorded.
     </div>
 
-    <!-- Change List -->
-    <!-- Change List -->
+   
     <div *ngFor="let change of getLogChanges(log)" style="display: flex; align-items: center; gap: 12px; font-size: 13px; margin-bottom: 8px;">
       
-      <!-- If it's an UPDATE (Old value exists) -->
+      
       <ng-container *ngIf="change.oldVal !== 'None'">
         <strong style="color: #9ca3af; width: 120px;">{{ change.key }}:</strong>
         <span style="color: #f87171; text-decoration: line-through; background: rgba(248, 113, 113, 0.1); padding: 2px 6px; border-radius: 4px;">
@@ -446,7 +1026,7 @@
         </span>
       </ng-container>
 
-      <!-- If it's NEW (No old value existed) -->
+     
       <ng-container *ngIf="change.oldVal === 'None'">
         <strong style="color: #9ca3af; width: 120px;">Set {{ change.key }} to:</strong>
         <span style="color: #818cf8; background: rgba(129, 140, 248, 0.1); padding: 2px 6px; border-radius: 4px;">
@@ -458,7 +1038,7 @@
   </div>
 </div>
 
-      <!-- Empty State -->
+     
       <div *ngIf="globalAuditLogs.length === 0" style="padding: 40px; text-align: center; color: #6b7280;">
         <mat-icon style="font-size: 48px; width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.5;">history</mat-icon>
         <p>No recent activity found.</p>
@@ -467,6 +1047,6 @@
     </div>
   </div>
 </div>
-    </div> <!-- Closes content-scrollable -->
-  </main> <!-- Closes main-content -->
-</div> <!-- Closes premium-layout -->
+    </div> 
+  </main> 
+</div> -->

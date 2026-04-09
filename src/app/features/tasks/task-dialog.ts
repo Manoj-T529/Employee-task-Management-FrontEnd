@@ -1,358 +1,177 @@
 import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { Subject, forkJoin, takeUntil } from 'rxjs';
+
 import { TaskService } from '../../services/task.service';
-import { forkJoin, Observable, Subject, takeUntil } from 'rxjs';
-import { User, Project, Task } from '../../models/types';
+import { ToastService } from '../../shared/ui/toast.service';
+import { User, Project } from '../../models/types';
 
 @Component({
   selector: 'app-task-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatDialogModule, MatIconModule, MatSelectModule],
-
+  imports: [CommonModule, ReactiveFormsModule, MatDialogModule, MatIconModule, MatSelectModule],
   templateUrl: './task-dialog.html',
   styleUrls: ['./task-dialog.css']
 })
 export class TaskDialogComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
-  task: any; // Using mapped object to handle form bindings safely
-  original: any;
+  taskForm!: FormGroup;
   users: User[] = [];
   projects: Project[] = [];
-									  
+  
   isNew: boolean = false; 
-  isSaving: boolean = false; // Disable button while saving
+  isSaving: boolean = false;
+  originalTaskId?: string;
 
   constructor(
-    @Inject(MAT_DIALOG_DATA) data: any,
+    @Inject(MAT_DIALOG_DATA) public data: any,
     private dialogRef: MatDialogRef<TaskDialogComponent>,
-    private taskService: TaskService
+    private fb: FormBuilder,
+    private taskService: TaskService,
+    private toast: ToastService
   ) {
     this.users = data.users || [];
     this.projects = data.projects || [];
     this.isNew = data.isNew || false;
-    
-    // Deep clone to prevent mutating the board behind the modal
-    this.original = JSON.parse(JSON.stringify(data));
-    this.task = JSON.parse(JSON.stringify(data));
+    this.originalTaskId = data.id;
 
-    if (this.isNew) {
-      this.task.status_id = 1;
-      this.task.priority_id = 1;
-      this.task.assignees = [];
-      this.original.assignees = [];
-    } else {
-								 
-      this.task.assignees = Array.isArray(this.task.task_assignees) 
-        ? this.task.task_assignees.map((a: any) => a.user_id || a) 
-        : [];
-      this.original.assignees = [...this.task.assignees];
+    console.log("=== 1. RAW DATA RECEIVED BY DIALOG ===");
+    console.log("Raw Start Date:", data.start_date);
+    console.log("Raw Due Date:", data.due_date);
 
-    }
-
-																	
-    this.task.start_date = this.formatDateForInput(this.task.start_date);
-    this.task.due_date = this.formatDateForInput(this.task.due_date);
+    this.initForm(data);
   }
 
   ngOnInit() {}
+
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
-	   
   }
 
-  formatDateForInput(dateStr: string | undefined): string | null {
+  private initForm(data: any) {
+    const formattedStart = this.formatDateForInput(data.start_date);
+    const formattedDue = this.formatDateForInput(data.due_date);
+    
+    console.log("=== 2. FORMATTED FOR HTML INPUT (Should be YYYY-MM-DD or null) ===");
+    console.log("Input Start Date:", formattedStart);
+    console.log("Input Due Date:", formattedDue);
 
-													  
-    if (!dateStr) return null;
-		 
-    try { return new Date(dateStr).toISOString().split('T')[0]; } 
-    catch { return null; }
+    const initialAssignees = Array.isArray(data.task_assignees) 
+      ? data.task_assignees.map((a: any) => a.user_id || a) 
+      : [];
+
+    this.taskForm = this.fb.group({
+      project_id: [{ value: data.project_id || '', disabled: !this.isNew }, this.isNew ? Validators.required : null],
+      title: [data.title || '', [Validators.required, Validators.minLength(3)]],
+      description: [data.description || ''],
+      status_id: [data.status_id || 1, Validators.required],
+      priority_id: [data.priority_id || 1, Validators.required],
+      story_points: [data.story_points || null, Validators.min(0)],
+      start_date: [formattedStart],
+      due_date: [formattedDue],
+      assignees: [initialAssignees]
+    });
+  }
+
+  private formatDateForInput(dateStr: string | undefined | null): string | null {
+    if (!dateStr || dateStr.trim() === '') return null; // Catch empty strings
+    
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) {
+        console.warn(`⚠️ Invalid Date Detected during input format: ${dateStr}`);
+        return null; 
+      }
+
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`; 
+    } catch (err) {
+      console.error("Error formatting for input:", err);
+      return null;
+    }
+  }
+
+  private formatDateForApi(dateStr: string | undefined | null): string | null {
+    if (!dateStr || dateStr.trim() === '') return null; // Catch empty inputs
+    
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) {
+        console.warn(`⚠️ Invalid Date Detected during API format: ${dateStr}`);
+        return null;
+      }
+      return d.toISOString(); 
+    } catch (err) {
+      console.error("Error formatting for API:", err);
+      return null;
+    }
   }
 
   save() {
-    // 1. FRONTEND VALIDATION
-    if (this.isNew) {
-      if (!this.task.project_id) {
-        alert("Please select a Workspace for this task.");
-        return;
-      }
-      if (!this.task.title || this.task.title.trim() === '') {
-        alert("Please enter an Issue Title.");
-        return;
-      }
-    }
-
-    this.isSaving = true;
-
-    // CREATE MODE
-    if (this.isNew) {
-      this.taskService.createTask(this.task).pipe(takeUntil(this.destroy$)).subscribe({
-        next: () => this.dialogRef.close(true),
-        error: (err) => {
-          console.error("Task Creation Failed:", err);
-          alert("Failed to create task. Check server logs.");
-          this.isSaving = false;
-        }
-      });
+    if (this.taskForm.invalid) {
+      console.warn("⚠️ Form is invalid! Cannot save. Errors:", this.taskForm.errors);
+      this.taskForm.markAllAsTouched();
       return;
     }
 
-    // ... Keep your existing EDIT MODE code ...
-				
-    const apiCalls: Observable<any>[] = [];
+    this.isSaving = true;
+    const formValue = this.taskForm.getRawValue(); 
 
-								 
-    if (this.task.status_id !== this.original.status_id) {
-      apiCalls.push(this.taskService.updateStatus(this.task.id, this.task.status_id));
-    }
-    
-								
-    if (this.task.start_date !== this.original.start_date || this.task.due_date !== this.original.due_date) {
-      apiCalls.push(this.taskService.updateTaskDate(this.task.id, this.task.start_date, this.task.due_date));
-    }
+    console.log("=== 3. RAW DATA FROM FORM (Before API Format) ===");
+    console.log("Form Start Date:", formValue.start_date);
+    console.log("Form Due Date:", formValue.due_date);
 
-																					 
-						   
-    const detailsChanged = this.task.title !== this.original.title || 
-                           this.task.description !== this.original.description ||
-                           this.task.priority_id !== this.original.priority_id ||
-                           this.task.story_points !== this.original.story_points;
+    // Convert back to Zod-friendly ISO Strings
+    formValue.start_date = this.formatDateForApi(formValue.start_date);
+    formValue.due_date = this.formatDateForApi(formValue.due_date);
 
-    if (detailsChanged) {
-      apiCalls.push(this.taskService.updateTaskDetails(this.task.id, this.task));
-    }
+    console.log("=== 4. FINAL PAYLOAD SENDING TO API (Should be ISO or null) ===");
+    console.log("API Start Date:", formValue.start_date);
+    console.log("API Due Date:", formValue.due_date);
 
-						  
-    const originalAssignees = this.original.assignees || [];
-    const newAssignees = this.task.assignees || [];
-
-																				
-							 
-    const assigneesChanged = originalAssignees.length !== newAssignees.length || 
-                             newAssignees.some((id: string) => !originalAssignees.includes(id));
-																		 
-
-    if (assigneesChanged) {
-																									 
-																	
-      apiCalls.push(this.taskService.assignUsers(this.task.id, newAssignees));
-    }
-
-							  
-    if (apiCalls.length > 0) {
-      forkJoin(apiCalls).pipe(takeUntil(this.destroy$)).subscribe({
-        next: () => this.dialogRef.close(true),
-        error: () => this.isSaving = false
+    if (this.isNew) {
+      this.taskService.createTask(formValue).pipe(takeUntil(this.destroy$)).subscribe({
+        next: () => {
+          this.toast.success('Task created successfully');
+          this.dialogRef.close(true);
+        },
+        error: (err) => {
+          console.error("❌ CREATE TASK API ERROR:", err);
+          this.isSaving = false;
+        }
       });
     } else {
-      this.dialogRef.close(false); 
+      const apiCalls = [];
+
+      apiCalls.push(this.taskService.updateStatus(this.originalTaskId!, formValue.status_id));
+      apiCalls.push(this.taskService.updateTaskDetails(this.originalTaskId!, formValue));
+      apiCalls.push(this.taskService.assignUsers(this.originalTaskId!, formValue.assignees));
+      
+      // Send null if they cleared the date, or the ISO string if they set one
+      apiCalls.push(this.taskService.updateTaskDate(this.originalTaskId!, formValue.start_date, formValue.due_date));
+
+      forkJoin(apiCalls).pipe(takeUntil(this.destroy$)).subscribe({
+        next: () => {
+          this.toast.success('Task updated successfully');
+          this.dialogRef.close(true);
+        },
+        error: (err) => {
+          console.error("❌ UPDATE TASK API ERROR:", err);
+          this.isSaving = false;
+        }
+      });
     }
   }
-  close() { this.dialogRef.close(); }
-   
+
+  close() { 
+    this.dialogRef.close(); 
+  }
 }
-
-
-
-// import { Component, Inject, OnInit } from '@angular/core';
-// import { CommonModule } from '@angular/common';
-// import { FormsModule } from '@angular/forms';
-// import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
-// import { MatIconModule } from '@angular/material/icon';
-// import { MatSelectModule } from '@angular/material/select';
-// import { TaskService } from '../../services/task.service';
-// import { forkJoin, Observable } from 'rxjs';
-
-// @Component({
-//   selector: 'app-task-dialog',
-//   standalone: true,
-//   imports: [
-//     CommonModule, 
-//     FormsModule, 
-//     MatDialogModule, 
-//     MatIconModule, 
-//     MatSelectModule
-//   ],
-//   templateUrl: './task-dialog.html',
-//   styleUrls: ['./task-dialog.css']
-// })
-// export class TaskDialogComponent implements OnInit {
-//   task: any;
-//   original: any;
-//   users: any[] = [];
-//   projects: any[] = [];
-
-//     newComment: string = '';
-//     comments: any[] = [];
-//     currentUser: any;
-  
-//   // THIS IS THE MISSING VARIABLE 👇
-//   isNew: boolean = false; 
-
-//   constructor(
-//     @Inject(MAT_DIALOG_DATA) data: any,
-//     private dialogRef: MatDialogRef<TaskDialogComponent>,
-//     private taskService: TaskService
-//   ) {
-//     this.users = data.users || [];
-//     this.projects = data.projects || [];
-//     this.isNew = data.isNew || false;
-    
-//     this.original = { ...data };
-//     this.task = { ...data };
-
-//     if (this.isNew) {
-//       this.task.status_id = 1;      // Default to "To Do"
-//       this.task.priority_id = 1;    // Default to "Medium"
-//       this.task.assignees = [];
-//       this.original.assignees = [];
-//     } else {
-//       // Logic for existing tasks
-//       if (this.task.task_assignees && Array.isArray(this.task.task_assignees)) {
-//         this.task.assignees = this.task.task_assignees.map((a: any) => a.user_id || a);
-//         this.original.assignees = [...this.task.assignees];
-//       } else if (!this.task.assignees) {
-//         this.task.assignees = [];
-//         this.original.assignees = [];
-//       }
-//     }
-
-//     // Format ISO dates from backend so HTML date inputs accept them
-//     this.task.start_date = this.formatDateForInput(this.task.start_date);
-//     this.task.due_date = this.formatDateForInput(this.task.due_date);
-//   }
-//   ngOnInit() {
-//     this.currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-//     if (!this.isNew) {
-//       this.loadComments();
-//     }
-//   }
-
-//    loadComments() {
-//     // Assuming you add this to task.service.ts: getComments(id)
-//     this.taskService.getComments(this.task.id).subscribe((res: any) => {
-//       this.comments = res || [];
-//     });
-//   }
-
-//   postComment() {
-//     if (!this.newComment.trim()) return;
-    
-//     // Assuming you add this to task.service.ts: addComment(taskId, text)
-//     this.taskService.addComment(this.task.id, this.newComment).subscribe(() => {
-//       this.newComment = ''; // Clear input
-//       this.loadComments();  // Refresh comments list
-//     });
-//   }
-  
-//   // Helper for displaying user details in comments
-//   // getUserName(userId: string) {
-//   //   const u = this.users.find(x => x.id === userId);
-//   //   return u ? (u.first_name || u.name || u.username) : 'Unknown User';
-//   // }
-  
-//   getUserName(userId: string) {
-//     const u = this.users.find(x => x.id === userId);
-    
-//     // If user is not found at all
-//     if (!u) return 'Unknown User';
-    
-//     // If user is found, try to get their name. If all are null, use their email, or default to Unknown
-//     return u.first_name || u.name || u.username || u.email || 'Unknown User';
-//   }
-  
-//   getAvatar(userId: string) {
-//     const name = this.getUserName(userId);
-    
-//     // Safety check to prevent the .substring crash!
-//     if (!name || name === 'Unknown User') {
-//       return '??';
-//     }
-    
-//     return name.substring(0, 2).toUpperCase();
-//   }
-
-//   // getAvatar(userId: string) {
-//   //   const name = this.getUserName(userId);
-//   //   return name !== 'Unknown User' ? name.substring(0, 2).toUpperCase() : '??';
-//   // }
-//   formatDateForInput(dateStr: string): string | null {
-//     if (!dateStr) return null;
-//     try {
-//       return new Date(dateStr).toISOString().split('T')[0];
-//     } catch (e) { return null; }
-//   }
-
-//   save() {
-//     // CREATE MODE
-//     if (this.isNew) {
-//       this.taskService.createTask(this.task).subscribe(() => this.dialogRef.close(true));
-//       return;
-//     }
-
-//     // EDIT MODE
-//     const apiCalls: Observable<any>[] =[];
-
-//     // 1. Check if Status Changed
-//     if (this.task.status_id !== this.original.status_id) {
-//       apiCalls.push(this.taskService.updateStatus(this.task.id, this.task.status_id));
-//     }
-    
-//     // 2. Check if Dates Changed
-//     if (this.task.start_date !== this.original.start_date || this.task.due_date !== this.original.due_date) {
-//       apiCalls.push(this.taskService.updateTaskDate(this.task.id, this.task.start_date, this.task.due_date));
-//     }
-
-//     // 3. Check if ANYTHING ELSE Changed (Story Points, Title, Priority, Description)
-//     const detailsChanged = 
-//       this.task.title !== this.original.title || 
-//       this.task.description !== this.original.description ||
-//       this.task.priority_id !== this.original.priority_id ||
-//       this.task.story_points !== this.original.story_points;
-
-//     if (detailsChanged) {
-//       apiCalls.push(this.taskService.updateTaskDetails(this.task.id, this.task));
-//     }
-
-//      // 4. Check Assignees
-//     const originalAssignees = this.original.assignees || [];
-//     const newAssignees = this.task.assignees || [];
-
-//     // Check if the length is different or if the arrays contain different items
-//     const assigneesChanged = 
-//       originalAssignees.length !== newAssignees.length || 
-//       newAssignees.some((id: string) => !originalAssignees.includes(id)) ||
-//       originalAssignees.some((id: string) => !newAssignees.includes(id));
-
-//     if (assigneesChanged) {
-//       // Assuming your taskService has this method pointing to your backend "assignUsers" controller 
-//       // e.g., PUT /tasks/:taskId/assign with body: { users: [...] }
-//       apiCalls.push(this.taskService.assignUsers(this.task.id, newAssignees));
-//     }
-
-//     // --- RUN ALL CHANGES ---
-//     if (apiCalls.length > 0) {
-//       forkJoin(apiCalls).subscribe(() => this.dialogRef.close(true));
-//     } else {
-//       this.dialogRef.close(false); // No changes were made
-//     }
-//   }
-
-//   deleteTask() {
-//     if (confirm('Are you sure you want to permanently delete this issue?')) {
-//       this.taskService.deleteTask(this.task.id).subscribe(() => {
-//         this.dialogRef.close(true);
-//       });
-//     }
-//   }
-
-//   close() { 
-//     this.dialogRef.close(); 
-//   }
-// }

@@ -560,3 +560,84 @@
 .form-group input[type="date"]::-webkit-calendar-picker-indicator:hover {
   opacity: 1 !important;        
 }
+/* ================= MOBILE RESPONSIVENESS & SIDEBAR FIX ================= */
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 998; /* Sits just below the sidebar */
+  transition: opacity 0.3s ease;
+}
+
+/* Hide hamburger on desktop */
+.mobile-menu-toggle {
+  display: none;
+  background: transparent; border: none; color: var(--text-main);
+  padding: 8px; margin-right: 8px; cursor: pointer; border-radius: 8px;
+}
+
+/* Status Dropdown styling for cards */
+.status-select {
+  background: #1f2937;
+  color: #e5e7eb;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.status-select:focus { border-color: #6366f1; }
+
+@media (max-width: 768px) {
+  /* 1. Show the hamburger menu */
+  .mobile-menu-toggle { 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+  }
+
+  /* 2. The Sidebar Logic */
+  .sidebar {
+    position: fixed;
+    left: 0; top: 0; height: 100%;
+    transform: translateX(-100%); /* Hidden by default */
+    background-color: #09090b !important; /* Solid dark background */
+    box-shadow: none;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 999; /* MUST BE HIGHEST */
+  }
+  
+  /* Classes applied when hamburger is clicked */
+  .sidebar.mobile-open {
+    transform: translateX(0);
+    box-shadow: 10px 0 30px rgba(0,0,0,0.8);
+  }
+  
+  .sidebar-backdrop.mobile-open {
+    display: block;
+    animation: fadeIn 0.3s ease;
+  }
+
+  /* 3. Mobile Kanban Swipe */
+  .kanban-columns {
+    scroll-snap-type: x mandatory; 
+    padding-bottom: 24px;
+  }
+  .kanban-col {
+    min-width: 85vw; /* Columns take up screen width */
+    scroll-snap-align: center;
+  }
+
+  /* Allow vertical scroll while allowing long-press drag */
+  .issue-card {
+    touch-action: pan-y !important; 
+  }
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
