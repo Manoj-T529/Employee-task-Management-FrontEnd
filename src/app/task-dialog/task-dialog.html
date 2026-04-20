@@ -1,8 +1,17 @@
 <div class="dialog-wrapper">
   <h2 mat-dialog-title class="dialog-title">
-    <span class="brand-icon"><mat-icon>{{ isNew ? 'add_box' : 'edit_square' }}</mat-icon></span> 
-    {{ isNew ? 'Schedule New Task' : 'Edit Task Details' }}
-  </h2>
+  <span class="brand-icon">
+    <mat-icon>{{ isNew ? 'add_box' : 'edit_square' }}</mat-icon>
+  </span> 
+
+  <ng-container *ngIf="isNew; else editText">
+   <span class="edit-title"> Schedule New Task</span>
+  </ng-container>
+
+  <ng-template #editText>
+    <span class="edit-title">Edit Task Details</span>
+  </ng-template>
+</h2>
 
   <div mat-dialog-content class="dialog-content">
     
