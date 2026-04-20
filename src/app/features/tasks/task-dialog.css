@@ -36,6 +36,10 @@
   border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
+.edit-title {
+  color: #8b5cf6; /* Tailwind violet-500 */
+}
+
 .brand-icon {
   width: 28px;
   height: 28px;
