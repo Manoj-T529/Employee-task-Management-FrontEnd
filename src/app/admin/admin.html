@@ -160,7 +160,7 @@
             </div>
             <div class="col-body" cdkDropList id="list-todo" [cdkDropListData]="board.TODO"
               [cdkDropListConnectedTo]="['list-prog', 'list-done']" (cdkDropListDropped)="drop($event, 'TODO')">
-              <div class="issue-card" *ngFor="let t of board.TODO" cdkDrag[cdkDragStartDelay]="{ touch: 250, mouse: 0 }" (click)="openTaskDialog(t)">
+              <div class="issue-card" *ngFor="let t of board.TODO" cdkDrag [cdkDragStartDelay]="{ touch: 250, mouse: 0 }" (click)="openTaskDialog(t)">
 
                 <div class="issue-header">
                   <span class="issue-id">{{t.id | slice:0:8}}</span>
@@ -214,7 +214,7 @@
             </div>
             <div class="col-body" cdkDropList id="list-prog" [cdkDropListData]="board.IN_PROGRESS"
               [cdkDropListConnectedTo]="['list-todo', 'list-done']" (cdkDropListDropped)="drop($event, 'IN_PROGRESS')">
-              <div class="issue-card" *ngFor="let t of board.IN_PROGRESS" cdkDrag[cdkDragStartDelay]="{ touch: 250, mouse: 0 }" (click)="openTaskDialog(t)">
+              <div class="issue-card" *ngFor="let t of board.IN_PROGRESS" cdkDrag [cdkDragStartDelay]="{ touch: 250, mouse: 0 }" (click)="openTaskDialog(t)">
 
                 <div class="issue-header">
                   <span class="issue-id">{{t.id | slice:0:8}}</span>
@@ -265,7 +265,7 @@
             </div>
             <div class="col-body" cdkDropList id="list-done" [cdkDropListData]="board.DONE"
               [cdkDropListConnectedTo]="['list-todo', 'list-prog']" (cdkDropListDropped)="drop($event, 'DONE')">
-              <div class="issue-card done-card" *ngFor="let t of board.DONE" cdkDrag[cdkDragStartDelay]="{ touch: 250, mouse: 0 }" (click)="openTaskDialog(t)">
+              <div class="issue-card done-card" *ngFor="let t of board.DONE" cdkDrag [cdkDragStartDelay]="{ touch: 250, mouse: 0 }" (click)="openTaskDialog(t)">
 
                 <div class="issue-header">
                   <span class="issue-id">{{t.id | slice:0:8}}</span>

@@ -195,25 +195,86 @@ export class Admin implements OnInit, OnDestroy {
       });
   }
 
+  // drop(event: CdkDragDrop<Task[]>, status: string) {
+  //   if (event.previousContainer === event.container) {
+  //     moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+  //     return;															 
+  //   }
+   
+  //   transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
+    
+  //   const task = event.container.data[event.currentIndex];
+  //   const statusId = status === 'TODO' ? 1 : (status === 'IN_PROGRESS' ? 2 : 3);
+
+  //   this.taskService.updateStatus(task.id, statusId)
+  //     .pipe(takeUntil(this.destroy$))
+  //     .subscribe({
+  //       error: (err) => {
+  //         this.toast.error('Failed to move task. Reverting...');
+  //         transferArrayItem(event.container.data, event.previousContainer.data, event.currentIndex, event.previousIndex);									  
+  //       }
+  //     });
+  // }
+
+  // ================= DRAG AND DROP =================
   drop(event: CdkDragDrop<Task[]>, status: string) {
     if (event.previousContainer === event.container) {
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
       return;															 
     }
    
+    // 1. Move the card to the new column physically
     transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
     
+    // 2. Calculate new status
     const task = event.container.data[event.currentIndex];
-    const statusId = status === 'TODO' ? 1 : (status === 'IN_PROGRESS' ? 2 : 3);
+    const newStatusId = status === 'TODO' ? 1 : (status === 'IN_PROGRESS' ? 2 : 3);
+    const oldStatusId = task.status_id; // Remember old status in case of API failure
 
-    this.taskService.updateStatus(task.id, statusId)
+    // 👇 FAANG FIX: Instantly update the task's status_id so the Dropdown UI changes immediately!
+    task.status_id = newStatusId;
+    this.cdr.detectChanges(); 
+
+    // 3. Send update to backend
+    this.taskService.updateStatus(task.id, newStatusId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         error: (err) => {
           this.toast.error('Failed to move task. Reverting...');
+          // Rollback the physical move
           transferArrayItem(event.container.data, event.previousContainer.data, event.currentIndex, event.previousIndex);									  
+          // Rollback the dropdown UI
+          task.status_id = oldStatusId; 
+          this.cdr.detectChanges();
         }
       });
+  }
+
+  // ================= MOBILE DROPDOWN =================
+  onStatusSelectChange(task: Task, event: Event): void {
+    // Stop the click from opening the Task Dialog
+    event.stopPropagation(); 
+    
+    const selectElement = event.target as HTMLSelectElement;
+    const newStatusId = Number(selectElement.value);
+    const oldStatusId = task.status_id; 
+
+    // 👇 FAANG FIX: Instantly update the local object to match the dropdown
+    task.status_id = newStatusId;
+    
+    this.taskService.updateStatus(task.id, newStatusId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        // Refresh the board so the task actually moves to the correct column
+        if (this.selectedProjectId) this.loadBoard(this.selectedProjectId);
+      },
+      error: () => {
+        // Rollback DOM visually if request fails
+        selectElement.value = String(oldStatusId); 
+        task.status_id = oldStatusId;
+        this.toast.error('Failed to update status');
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   openCommentsDialog(event: Event, task: Task) {
@@ -285,27 +346,27 @@ export class Admin implements OnInit, OnDestroy {
   }
 
   // Add this method anywhere inside your Admin class
-  onStatusSelectChange(task: Task, event: Event): void {
-    // Stop the click from opening the Task Dialog
-    event.stopPropagation(); 
+  // onStatusSelectChange(task: Task, event: Event): void {
+  //   // Stop the click from opening the Task Dialog
+  //   event.stopPropagation(); 
     
-    const selectElement = event.target as HTMLSelectElement;
-    const newStatusId = Number(selectElement.value);
-    const oldStatusId = task.status_id; 
+  //   const selectElement = event.target as HTMLSelectElement;
+  //   const newStatusId = Number(selectElement.value);
+  //   const oldStatusId = task.status_id; 
     
-    this.taskService.updateStatus(task.id, newStatusId).pipe(takeUntil(this.destroy$)).subscribe({
-      next: () => {
-        if (this.selectedProjectId) this.loadBoard(this.selectedProjectId);
-      },
-      error: () => {
-        // Rollback DOM visually if request fails
-        selectElement.value = String(oldStatusId); 
-        this.toast.error('Failed to update status');
-        this.cdr.detectChanges();
-      }
-    });
-  }
-  // ================= FORM SUBMISSIONS =================
+  //   this.taskService.updateStatus(task.id, newStatusId).pipe(takeUntil(this.destroy$)).subscribe({
+  //     next: () => {
+  //       if (this.selectedProjectId) this.loadBoard(this.selectedProjectId);
+  //     },
+  //     error: () => {
+  //       // Rollback DOM visually if request fails
+  //       selectElement.value = String(oldStatusId); 
+  //       this.toast.error('Failed to update status');
+  //       this.cdr.detectChanges();
+  //     }
+  //   });
+  // }
+ 
   // ================= FORM SUBMISSIONS =================
   createProject() {
     if (this.projectForm.invalid) {
